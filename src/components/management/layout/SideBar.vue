@@ -1,0 +1,144 @@
+<template>
+  <v-navigation-drawer
+    v-model="drawer"
+    permanent
+    color="#F4F5F9"
+    app
+  >
+    <v-list-item class="px-2 py-5">
+      <v-list-item-title
+        class="text-capitalize"
+        align="center"
+      >
+        360 For Men
+      </v-list-item-title>
+    </v-list-item>
+    <v-list
+      nav
+      dense
+    >
+      <v-list-item-group
+        v-model="selectedItem"
+        color="deep-purple"
+      >
+        <v-list-item
+          v-for="(item, i) in items"
+          :key="i"
+          @click="handleMenuClick(item.name)"
+        >
+          <v-list-item-icon>
+            <v-icon v-text="item.icon"></v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title v-text="item.text"></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-group
+          :value="true"
+          prepend-icon="fas fa-cog"
+          color="deep-purple"
+        >
+          <template v-slot:activator>
+            <v-list-item-title>Thiết lập</v-list-item-title>
+          </template>
+
+          <v-list-group
+            no-action
+            sub-group
+          >
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title>Chi nhánh</v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <v-list-item
+              v-for="([title, icon,name], i) in branchs"
+              :key="i"
+              link
+              @click="handleMenuClick(name)"
+            >
+              <v-list-item-icon>
+                <v-icon v-text="icon"></v-icon>
+              </v-list-item-icon>
+              <v-list-item-title v-text="title"></v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+
+          <v-list-group
+            no-action
+            sub-group
+          >
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title>Phân quyền</v-list-item-title>
+              </v-list-item-content>
+            </template>
+
+            <v-list-item
+              v-for="([title, icon,name], i) in settings"
+              :key="i"
+              link
+              @click="handleMenuClick(name)"
+            >
+              <v-list-item-icon>
+                <v-icon v-text="icon"></v-icon>
+              </v-list-item-icon>
+              <v-list-item-title v-text="title"></v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+        </v-list-group>
+      </v-list-item-group>
+    </v-list>
+  </v-navigation-drawer>
+</template>
+<script>
+export default {
+  data: () => ({
+    selectedItem: 0,
+    drawer: null,
+    items: [
+      {
+        icon: "mdi-cart-variant",
+        text: "Đơn hàng",
+        route: "/order",
+        name: "m-order",
+      },
+      {
+        icon: "mdi-account-group",
+        text: "Người mua",
+        route: "/customer",
+        name: "m-customer",
+      },
+      {
+        icon: "mdi-home-circle-outline",
+        text: "Khuyến mãi",
+        route: "/promotion",
+        name: "m-promotion",
+      },
+      {
+        icon: "mdi-finance",
+        text: "Báo cáo",
+        route: "/report",
+        name: "m-report",
+      },
+    ],
+    branchs: [["Danh sách", "mdi-home", "m-branch"]],
+    settings: [
+      ["Người dùng", "mdi-account-multiple", "m-employee"],
+      ["Vai trò", "mdi-alpha-r-circle-outline", "m-role"],
+    ],
+  }),
+  methods: {
+    handleMenuClick(name) {
+      this.$router.push({
+        name: name,
+      });
+    },
+  },
+};
+</script>
+<style scoped>
+div >>> .v-list a {
+  text-decoration: none;
+}
+</style>

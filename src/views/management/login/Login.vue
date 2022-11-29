@@ -1,158 +1,112 @@
 <template>
-  <div class="login-page">
-    <div class="card card-container">
+  <div class="login-form">
+    <div class="login-card">
       <img
         id="profile-img"
         src="https://nvdien.blob.core.windows.net/images/360formen.png"
         class="profile-img-card"
       />
-      <form
-        name="form"
-        @submit.prevent="handleLogin"
-        class="login-form"
+      <v-form
+        ref="form"
+        v-model="valid"
+        lazy-validation
+        class="login-form-inside"
       >
-        <div class="form-group">
-          <label for="username">Tài khoản</label>
-          <input
-            v-model="user.username"
-            v-validate="'required'"
-            type="text"
-            class="form-control"
-            name="username"
-          />
-          <div
-            v-if="errors.has('username')"
-            class="alert alert-danger login-warning"
-            role="alert"
-          >Tài khoản bắt buộc nhập.</div>
-        </div>
-        <div class="form-group">
-          <label for="password">Mật khẩu</label>
-          <input
-            v-model="user.password"
-            v-validate="'required'"
-            type="password"
-            class="form-control"
-            name="password"
-          />
-          <div
-            v-if="errors.has('password')"
-            class="alert alert-danger login-warning"
-            role="alert"
-          >Mật khẩu bắt buộc nhập.</div>
-        </div>
-        <div class="form-group">
 
-        </div>
-        <div class="form-group">
-          <button
-            class="btn btn-primary btn-block mt-3"
-            :disabled="loading"
-          >
-            <span
-              v-show="loading"
-              class="spinner-border spinner-border-sm "
-            ></span>
-            <span>Đăng nhập</span>
-          </button>
-        </div>
-        <div class="form-group">
-          <div
-            v-if="message"
-            class="alert alert-danger "
-            role="alert"
-          >{{message}}</div>
-        </div>
-      </form>
+        <v-text-field
+          v-model="email"
+          :rules="emailRules"
+          label="E-mail"
+          required
+        ></v-text-field>
+        <v-text-field
+          v-model="password"
+          :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+          :rules="[rules.required]"
+          :type="show1 ? 'text' : 'password'"
+          name="input-10-1"
+          label="Mật khẩu"
+          @click:append="show1 = !show1"
+          class="mt-2"
+        ></v-text-field>
+        <a
+          href="#"
+          class="text-decoration-none mt-2"
+        >Quên mật khẩu ?</a>
+        <v-btn
+          :disabled="!valid"
+          color="success"
+          @click="validate"
+          width="100%"
+          class="mt-3"
+        >
+          Đăng nhập
+        </v-btn>
+      </v-form>
     </div>
   </div>
 </template>
-  
-  <script>
-import User from "../../../models/user";
-
+<script>
 export default {
-  name: "Login",
-  data() {
-    return {
-      user: new User("", ""),
-      loading: false,
-      message: "",
-    };
-  },
-  computed: {
-    loggedIn() {
-      return this.$store.state.auth.status.loggedIn;
+  data: () => ({
+    valid: true,
+    name: "",
+    nameRules: [
+      (v) => !!v || "Name is required",
+      (v) => (v && v.length <= 10) || "Name must be less than 10 characters",
+    ],
+    email: "",
+    emailRules: [
+      (v) => !!v || "E-mail bắt buộc nhập.",
+      (v) => /.+@.+\..+/.test(v) || "E-mail không hợp lệ.",
+    ],
+    show1: false,
+    password: "",
+    rules: {
+      required: (value) => !!value || "Mật khẩu bắt buộc nhập.",
+      emailMatch: () => `Email hoặc mật khẩu không chính xác.`,
     },
-  },
-  created() {
-    if (this.loggedIn) {
-      this.$router.push("/profile");
-    }
-  },
-  methods: {
-    handleLogin() {
-      this.loading = true;
-      this.$validator.validateAll().then((isValid) => {
-        if (!isValid) {
-          this.loading = false;
-          return;
-        }
+  }),
 
-        if (this.user.username && this.user.password) {
-          this.$store.dispatch("auth/login", this.user).then(
-            () => {
-              this.$router.push("/profile");
-            },
-            (error) => {
-              this.loading = false;
-              this.message =
-                (error.response && error.response.data) ||
-                error.message ||
-                error.toString();
-            }
-          );
-        }
-      });
+  methods: {
+    validate() {
+      this.$refs.form.validate();
+      console.log("oke");
+    },
+    reset() {
+      this.$refs.form.reset();
+    },
+    resetValidation() {
+      this.$refs.form.resetValidation();
     },
   },
 };
 </script>
-  
 <style scoped>
-.login-page {
+.login-form {
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: row;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  background-image: url("https://nvdien.blob.core.windows.net/images/loginbg.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
-
-label {
-  display: block;
-  margin-top: 10px;
-}
-
-.card-container.card {
-  max-width: 400px !important;
-  padding: 40px 40px;
-}
-
-.login-warning {
-  margin-top: 8px !important;
-  padding: 0.5rem;
-}
-.card {
-  background-color: #f7f7f7;
+.login-card {
+  background-color: aliceblue;
   padding: 20px 25px 30px;
   margin: 0 auto 25px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px;
-  border-radius: 2px;
+  border-radius: 8px;
   -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
   -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+}
+.login-form-inside {
+  padding: 10px 50px 50px 50px;
 }
 
 .profile-img-card {
@@ -163,9 +117,5 @@ label {
   -moz-border-radius: 50%;
   -webkit-border-radius: 50%;
   border-radius: 50%;
-}
-
-.login-form {
-  width: 250px !important;
 }
 </style>

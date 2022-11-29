@@ -1,15 +1,15 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-
+import routerCustomer from './customer/index.js'
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
-    redirect:"/order"
+    path: '/management',
+    redirect:"/management/order"
   },
   {
-    path: '/customer',
+    path: '/management/customer',
     name: 'm-customer',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -17,7 +17,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "customer" */ '../views/management/customer/CustomerList.vue')
   },
   {
-    path: '/order',
+    path: '/management/order',
     name: 'm-order',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -25,7 +25,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "order" */ '../views/management/order/OrderList.vue')
   },
   {
-    path: '/promotion',
+    path: '/management/promotion',
     name: 'm-promotion',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -33,7 +33,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "promotion" */ '../views/management/promotion/PromotionList.vue')
   },
   {
-    path: '/report',
+    path: '/management/report',
     name: 'm-report',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -41,7 +41,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "promotion" */ '../views/management/report/ReportList.vue')
   },
   {
-    path: '/setting',
+    path: '/management/setting',
     component: () =>
 					import(/*webpackChunkName "branch" */ '../views/management/setting/Setting.vue'),
     children: [
@@ -67,7 +67,29 @@ const routes = [
 			
       
 		]
-  }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    // lazy-loaded
+    component: () => import('../views/test/Profile.vue')
+  },
+  // {
+  //   path: '/home',
+  //   // lazy-loaded
+  //   component: () => import("../views/test/Home.vue")
+  // },
+  {
+    path: '/login',
+    // lazy-loaded
+    component: () => import('../views/management/login/Login.vue')
+  },
+  {
+    path: '/register',
+    // lazy-loaded
+    component: () => import('../views/management/register/Register.vue')
+  },
+  ...routerCustomer
 ]
 
 const router = new VueRouter({
@@ -75,5 +97,19 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
+
+// router.beforeEach((to, from, next) => {
+//   const publicPages = ['/login', '/register', '/home'];
+//   const authRequired = !publicPages.includes(to.path);
+//   const loggedIn = localStorage.getItem('user');
+
+//   // trying to access a restricted page + not logged in
+//   // redirect to login page
+//   if (authRequired && !loggedIn) {
+//     next('/login');
+//   } else {
+//     next();
+//   }
+// });
 
 export default router

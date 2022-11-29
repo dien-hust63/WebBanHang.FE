@@ -14,13 +14,13 @@
       >
 
         <v-text-field
-          v-model="email"
+          v-model="user.email"
           :rules="emailRules"
           label="E-mail"
           required
         ></v-text-field>
         <v-text-field
-          v-model="password"
+          v-model="user.password"
           :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
           :rules="[rules.required]"
           :type="show1 ? 'text' : 'password'"
@@ -36,7 +36,7 @@
         <v-btn
           :disabled="!valid"
           color="success"
-          @click="validate"
+          @click="loginPage"
           width="100%"
           class="mt-3"
         >
@@ -47,31 +47,53 @@
   </div>
 </template>
 <script>
+import AuthService from "../../../service/auth.service";
 export default {
   data: () => ({
     valid: true,
-    name: "",
     nameRules: [
       (v) => !!v || "Name is required",
       (v) => (v && v.length <= 10) || "Name must be less than 10 characters",
     ],
-    email: "",
     emailRules: [
       (v) => !!v || "E-mail bắt buộc nhập.",
       (v) => /.+@.+\..+/.test(v) || "E-mail không hợp lệ.",
     ],
     show1: false,
-    password: "",
     rules: {
       required: (value) => !!value || "Mật khẩu bắt buộc nhập.",
       emailMatch: () => `Email hoặc mật khẩu không chính xác.`,
     },
+    user: {
+      email: "",
+      password: "",
+    },
   }),
 
   methods: {
-    validate() {
+    async loginPage() {
       this.$refs.form.validate();
-      console.log("oke");
+      let response = await AuthService.login(this.user);
+      if (response) {
+        if (response.data) {
+          localStorage.setItem("user", JSON.stringify(response.data));
+          this.$router.push({ path: "/management" });
+        } else {
+          this.$toast.open({
+            message: response.errorMessage,
+            type: "error",
+            duration: 5000,
+            dismissible: true,
+          });
+        }
+      } else {
+        this.$toast.open({
+          message: "Có lỗi xảy ra.",
+          type: "error",
+          duration: 5000,
+          dismissible: true,
+        });
+      }
     },
     reset() {
       this.$refs.form.reset();

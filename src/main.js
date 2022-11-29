@@ -6,9 +6,15 @@ import vuetify from './plugins/vuetify';
 import VeeValidate from 'vee-validate';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import VueToast from 'vue-toast-notification';
+
+import 'vue-toast-notification/dist/theme-sugar.css';
 Vue.config.productionTip = false
 
-
+Vue.use(VueToast,{
+  // One of the options
+  position: 'top'
+});
 Vue.use(VeeValidate);
 
 new Vue({

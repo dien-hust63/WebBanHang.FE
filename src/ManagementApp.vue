@@ -1,9 +1,9 @@
 <template>
   <div>
     <v-app>
-      <SideBar />
+      <SideBar v-if="!showSideBar" />
       <v-main>
-        <router-view></router-view>
+        <router-view :key="$route.fullPath"></router-view>
       </v-main>
     </v-app>
   </div>
@@ -19,8 +19,13 @@ export default {
   },
 
   data: () => ({
-    //
+    showSideBar: window.location.pathname.toLocaleLowerCase().includes("login"),
   }),
-  created() {},
+  updated() {
+    debugger; // eslint-disable-line no-debugger
+    this.showSideBar = window.location.pathname
+      .toLocaleLowerCase()
+      .includes("login");
+  },
 };
 </script>

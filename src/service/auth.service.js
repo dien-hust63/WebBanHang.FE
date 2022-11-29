@@ -1,21 +1,15 @@
 import axios from 'axios';
-
-const API_URL = 'http://localhost:44329/api/v1/authentication/';
+import config from "../config/config.dev.json";
+const API_URL = `${config.BASE_URL_API}/authentication/`;
 
 class AuthService {
-  login(user) {
-    return axios
+  async login(user) {
+    const response =  await axios
       .post(API_URL + 'login', {
-        username: user.username,
+        email: user.email,
         password: user.password
-      })
-      .then(response => {
-        if (response.data.accessToken) {
-          localStorage.setItem('user', JSON.stringify(response.data));
-        }
-
-        return response.data;
       });
+    return response.data;
   }
 
   logout() {

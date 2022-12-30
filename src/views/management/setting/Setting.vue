@@ -1,5 +1,5 @@
 <template>
-  <div class="bk-setting">
+  <div class="bk-setting ">
     <router-view></router-view>
   </div>
 </template>
@@ -8,7 +8,10 @@ export default {
   name: "SettingList",
 };
 </script>
-<style lang="sass" scoped>
+<style lang="css" scoped>
+.bk-setting {
+  height: 100%;
+}
 </style>
   
   

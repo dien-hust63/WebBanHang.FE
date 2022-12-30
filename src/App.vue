@@ -35,3 +35,7 @@ export default {
   },
 };
 </script>
+
+<style >
+@import url("./css/common/common.css");
+</style>

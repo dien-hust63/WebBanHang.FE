@@ -6,14 +6,20 @@
       color="#F4F5F9"
       app
     >
-      <v-list-item class="px-2 py-5">
+      <v-list-item class="px-2 pt-5">
         <v-list-item-title
           class="text-capitalize"
           align="center"
         >
-          360 For Men
+          <v-avatar
+            class="d-block text-center mx-auto mt-4 mb-10"
+            size="120"
+          >
+            <v-img src="https://nvdien.blob.core.windows.net/images/360formen.png"></v-img>
+          </v-avatar>
         </v-list-item-title>
       </v-list-item>
+      <v-divider dark="true"></v-divider>
       <v-list
         nav
         dense

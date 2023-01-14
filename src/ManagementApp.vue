@@ -22,7 +22,6 @@ export default {
     showSideBar: window.location.pathname.toLocaleLowerCase().includes("login"),
   }),
   updated() {
-    debugger; // eslint-disable-line no-debugger
     this.showSideBar = window.location.pathname
       .toLocaleLowerCase()
       .includes("login");

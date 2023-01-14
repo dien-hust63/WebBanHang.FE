@@ -12,11 +12,50 @@
           <input
             type="text"
             class="form-control"
-            placeholder="Search"
+            :placeholder="searchTitle"
+            v-on:keyup.enter="onSearch"
+            v-model="searchValue"
           >
         </div>
       </div>
       <div class="right-section bk-flex-end">
+        <v-dialog
+          v-model="deleteConfigDialog"
+          persistent
+          max-width="360"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="error"
+              v-bind="attrs"
+              v-on="on"
+              v-show="isShowDelete"
+              class="mr-4"
+              depressed
+            >
+              {{ deleteBtn }}
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title class="text-h6">
+              Bạn có chắc muốn xóa dữ liệu đã chọn?
+            </v-card-title>
+            <!-- <v-card-text>Bạn có chắc muốn xóa những dữ liệu đã chọn?</v-card-text> -->
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn @click="deleteConfigDialog = false">
+                Hủy
+              </v-btn>
+              <v-btn
+                depressed
+                color="error"
+                @click="deleteData"
+              >
+                Xóa
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-btn
           color="primary"
           @click="openAddForm()"
@@ -35,16 +74,36 @@
 export default {
   name: "Mheader",
   data() {
-    return {};
+    return {
+      deleteConfigDialog: false,
+      searchValue: "",
+    };
   },
   props: {
     title: String,
     subtitle: String,
     addBtn: String,
+    isShowDelete: Boolean,
+    deleteBtn: String,
+    searchTitle: String,
   },
   methods: {
     openAddForm() {
       this.$emit("openAddForm");
+    },
+    deleteData() {
+      this.$emit("deleteData");
+    },
+    onSearch() {
+      this.$emit("onSearch", this.searchValue);
+    },
+  },
+  watch: {
+    isShowDelete(val) {
+      debugger; // eslint-disable-line no-debugger
+      if (!val) {
+        this.deleteConfigDialog = false;
+      }
     },
   },
 };

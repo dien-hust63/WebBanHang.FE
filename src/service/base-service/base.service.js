@@ -15,4 +15,44 @@ export default class BaseService {
     return axios
       .post(`${API_URL}/${this.controller}/paging`, param);
   }
+
+  /**
+   * Lấy toàn bộ dữ liệu
+   * @param {*} param 
+   * @returns 
+   */
+  getAllData() {
+    return axios
+      .get(`${API_URL}/${this.controller}`);
+  }
+
+  /**
+   * thêm mới
+   * @param {*} param 
+   * @returns 
+   */
+  insertData(param) {
+    return axios
+      .post(`${API_URL}/${this.controller}`, param);
+  }
+
+  /**
+   * cập nhật theo id
+   * @param {*} param 
+   * @returns 
+   */
+  updateData(param, id) {
+    return axios
+      .put(`${API_URL}/${this.controller}/${id}`, param);
+  }
+
+  /**
+   * xóa nhiều theo listID
+   * @param {} param 
+   * @returns 
+   */
+  deleteMultiple(param){
+    return axios
+      .post(`${API_URL}/${this.controller}/delete/multiple`, param);
+  }
 }

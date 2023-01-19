@@ -27,6 +27,16 @@ export default class BaseService {
   }
 
   /**
+   * Lấy dữ liệu theo id
+   * @param {*} param 
+   * @returns 
+   */
+  getDataById(id) {
+    return axios
+      .get(`${API_URL}/${this.controller}/${id}`);
+  }
+
+  /**
    * thêm mới
    * @param {*} param 
    * @returns 

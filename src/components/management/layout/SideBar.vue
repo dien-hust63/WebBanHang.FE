@@ -106,6 +106,30 @@ export default {
     drawer: null,
     items: [
       {
+        icon: "mdi-finance",
+        text: "Tổng quan",
+        route: "/report",
+        name: "m-report",
+      },
+      {
+        icon: "mdi-cart-variant",
+        text: "Hàng hóa",
+        route: "/order",
+        name: "m-order",
+      },
+      {
+        icon: "mdi-cart-variant",
+        text: "Nhóm hàng hóa",
+        route: "/order",
+        name: "m-order",
+      },
+      {
+        icon: "mdi-cart-variant",
+        text: "Thiết lập giá",
+        route: "/order",
+        name: "m-order",
+      },
+      {
         icon: "mdi-cart-variant",
         text: "Đơn hàng",
         route: "/order",
@@ -123,16 +147,10 @@ export default {
         route: "/promotion",
         name: "m-promotion",
       },
-      {
-        icon: "mdi-finance",
-        text: "Báo cáo",
-        route: "/report",
-        name: "m-report",
-      },
     ],
     branchs: [["Danh sách", "mdi-home", "m-branch"]],
     settings: [
-      ["Người dùng", "mdi-account-multiple", "m-employee"],
+      ["Nhân viên", "mdi-account-multiple", "m-employee"],
       ["Vai trò", "mdi-alpha-r-circle-outline", "m-role"],
     ],
   }),

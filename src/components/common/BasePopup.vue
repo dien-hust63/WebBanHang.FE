@@ -5,6 +5,7 @@
         v-model="dialog"
         persistent
         :max-width="maxwidth"
+        :fullscreen="isFullScreen"
       >
         <v-card>
           <v-card-title>
@@ -41,6 +42,7 @@ export default {
     isShowPopup: Boolean,
     maxwidth: String,
     title: String,
+    isFullScreen: Boolean,
   },
   methods: {
     closePopup() {

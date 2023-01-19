@@ -125,7 +125,6 @@ export default {
   },
   watch: {
     isShowPopup(val) {
-      debugger; // eslint-disable-line no-debugger
       this.dialog = val;
     },
   },

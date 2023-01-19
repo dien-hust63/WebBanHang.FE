@@ -100,7 +100,6 @@ export default {
   },
   watch: {
     isShowDelete(val) {
-      debugger; // eslint-disable-line no-debugger
       if (!val) {
         this.deleteConfigDialog = false;
       }

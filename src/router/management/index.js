@@ -47,20 +47,24 @@ const routerManagement = [
                     component: () =>
                         import(/*webpackChunkName "branch" */ '../../views/management/branch/BranchList.vue')
                 },
-          {
+                {
                     path: 'employee',
                     name: "m-employee",
                     component: () =>
                         import(/*webpackChunkName "employee" */ '../../views/management/employee/EmployeeList.vue')
                 },
-          {
+                {
+                  path: 'employee/:id',
+                  name: "m-employee-detail",
+                  component: () =>
+                      import(/*webpackChunkName "employee" */ '../../views/management/employee/EmployeeDetail.vue')
+                },
+                {
                     path: 'role',
                     name: "m-role",
                     component: () =>
                         import(/*webpackChunkName "role" */ '../../views/management/role/RoleList.vue')
                 },
-                
-          
             ]
       },
 ]

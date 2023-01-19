@@ -102,7 +102,7 @@
               </v-col>
               <v-col cols="12">
                 <v-combobox
-                  label="Trưởng chi nhánh chi nhánh"
+                  label="Trưởng chi nhánh"
                   v-model="selectedManager"
                   item-text="text"
                   item-value="value"
@@ -199,20 +199,7 @@ export default {
       ],
       listFilter: [],
       filterFormula: "",
-      listEmployee: [
-        {
-          text: "Nguyễn Văn Trung (NV0001)",
-          value: 1,
-        },
-        {
-          text: "Nguyễn Văn Diện (NV0003)",
-          value: 2,
-        },
-        {
-          text: "Nguyễn Nam Phong (NV0004)",
-          value: 3,
-        },
-      ],
+      listEmployee: [],
       selectedManager: null,
     };
   },
@@ -231,7 +218,7 @@ export default {
       EmployeeService.getAllData()
         .then((result) => {
           if (result && result.data) {
-            me.listEmployee = result.data.map((x) => ({
+            me.listEmployee = result.data.data.map((x) => ({
               value: x.idemployee,
               text: `${x.employeename} (${x.employeecode})`,
             }));

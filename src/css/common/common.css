@@ -100,6 +100,35 @@ html, body{
     overflow-y: auto;
     
 }
+.bk-detail{
+    height: 100%;
+}
+.bk-detail-toolbar{
+    border-bottom: 1px #adad85 solid !important ;
+    height: 56px !important;
+}
+.bk-detail-content{
+    height: calc(100% - 56px);
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+
+.bk-detail-toolbar .v-toolbar__title{
+    font-size: 24px;
+    font-weight: bold;
+}
+
+
+.v-input--is-disabled *{
+     color: rgba(0,0,0,0.87) !important
+}
+
+.v-input--is-disabled .v-input__control{
+    background-color: rgba(0,0,0,0.05) !important;
+    border-radius: 4px !important;
+}
+ 
 
 /* width */
 ::-webkit-scrollbar {

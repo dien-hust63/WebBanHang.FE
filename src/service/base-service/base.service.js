@@ -3,7 +3,8 @@ import config from "../../config/config.dev.json";
 const API_URL = `${config.BASE_URL_API}`;
 export default class BaseService {
   constructor() {
-    this.controller = null
+    this.controller = null,
+    this.apiURL = API_URL
   }
 
   /**

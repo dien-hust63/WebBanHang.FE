@@ -1,26 +1,27 @@
 <template>
-  <div class="bk-employee-list bk-list">
+  <div class="bk-productcategory-list bk-list">
     <MHeader
       :title="title"
       :subtitle="subtitle"
-      addBtn='Thêm nhân viên'
+      addBtn='Thêm nhóm hàng hóa'
       @openAddForm="openAddForm"
       @deleteData="deleteData"
       :isShowDelete="isShowDelete"
-      deleteBtn="Xóa nhân viên"
-      searchTitle="Tìm kiếm theo mã, tên nhân viên"
-      @onSearch="searchEmployee"
+      deleteBtn="Xóa nhóm hàng hóa"
+      searchTitle="Tìm kiếm theo mã, tên nhóm hàng hóa"
+      @onSearch="searchProductcategory"
     />
     <div class="bk-list-body">
       <v-data-table
         v-model="selected"
         :headers="headers"
-        :items="employeeList"
-        item-key="employeecode"
+        :items="productcategoryList"
+        item-key="productcategorycode"
         show-select
         hide-default-footer
         fixed-header
         @dblclick:row="dblclickRow"
+        no-data-text="Không có dữ liệu"
       >
       </v-data-table>
     </div>
@@ -60,54 +61,53 @@
         </v-col>
       </v-row>
     </div>
-    <!-- <base-popup
+    <base-popup
       :isShowPopup="isShowPopup"
-      @closePopup="closeAddRolePopup"
+      @closePopup="closePopup"
+      maxwidth="760px"
       :title="titlePopup"
-      @saveData="saveEmployee"
-      :isFullScreen="true"
+      @saveData="saveData"
     >
       <v-card-text>
         <v-form
           ref="form"
           v-model="validForm"
           lazy-validation
-          class="role-form"
+          class="productcategory-form"
         >
           <v-container>
             <v-row>
               <v-col cols="12">
                 <v-text-field
-                  label="Mã nhân viên (*)"
+                  label="Mã nhóm hàng hóa (*)"
                   required
-                  :rules="[rules.employeeCodeRule]"
-                  v-model="addEmployee.employeecode"
+                  :rules="[rules.productcategoryCodeRule]"
+                  v-model="addData.productcategorycode"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-text-field
-                  label="Tên nhân viên (*)"
-                  :rules="[rules.employeeNameRule]"
+                  label="Tên nhóm hàng hóa (*)"
+                  :rules="[rules.productcategoryNameRule]"
                   required
-                  v-model="addEmployee.employeename"
+                  v-model="addData.productcategoryname"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-text-field
-                  label="Email (*)"
-                  :rules="rules.emailMatch"
+                  label="Mô tả nhóm hàng hóa"
                   persistent-hint
                   required
-                  v-model="addEmployee.email"
+                  v-model="addData.description"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-combobox
-                  label="Chi nhánh"
-                  v-model="selectedBranch"
+                  label="Thuộc nhóm hàng hóa"
+                  v-model="selectedCategory"
                   item-text="text"
                   item-value="value"
-                  :items="listBranch"
+                  :items="listCategoryCombobox"
                   return-object
                 ></v-combobox>
               </v-col>
@@ -116,82 +116,77 @@
           </v-container>
         </v-form>
       </v-card-text>
-    </base-popup> -->
+    </base-popup>
   </div>
 </template>
-<script>
+  <script>
 import MHeader from "../../../components/management/header/MHeader.vue";
 import { FactoryService } from "../../../service/factory/factory.service";
+import BasePopup from "../../../components/common/BasePopup.vue";
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
-const EmployeeService = FactoryService.get("employeeService");
+const ProductCategoryService = FactoryService.get("productcategoryService");
 export default {
-  name: "employeeList",
+  name: "ProductCategoryList",
   components: {
     MHeader,
+    BasePopup,
   },
   data() {
     return {
       isShowDelete: false,
       validForm: true,
       rules: {
-        employeeCodeRule: (value) => !!value || "Mã chi nhánh bắt buộc nhập.",
-        employeeNameRule: (value) => !!value || "Tên chi nhánh bắt buộc nhập.",
-        emailMatch: [
-          (v) => !!v || "E-mail bắt buộc nhập.",
-          (v) => /.+@.+\..+/.test(v) || "E-mail không hợp lệ.",
-        ],
+        productcategoryCodeRule: (value) =>
+          !!value || "Mã nhóm hàng hóa bắt buộc nhập.",
+        productcategoryNameRule: (value) =>
+          !!value || "Tên nhóm hàng hóa bắt buộc nhập.",
+        emailMatch: () => `Email hoặc mật khẩu không chính xác.`,
       },
-      titlePopup: "Thêm chi nhánh",
+      titlePopup: "Thêm nhóm hàng hóa",
       popupMode: FormMode.Add,
-      addEmployee: {},
+      addData: {},
       isShowPopup: false,
       maxPageShow: 7,
       pageShow: 1,
       pageSize: 10,
       pageIndex: 1,
       totalPage: 0,
-      title: "Nhân viên",
-      subtitle: "Danh sách các nhân viên",
+      title: "Nhóm hàng hóa",
+      subtitle: "Danh sách nhóm hàng hóa.",
       selected: [],
+      listCategoryCombobox: [],
       headers: [
         {
-          text: "ID nhân viên",
+          text: "ID nhóm hàng hóa",
           align: " d-none",
           sortable: false,
-          value: "idemployee",
+          value: "idproductcategory",
         },
         {
-          text: "Mã nhân viên",
+          text: "Mã nhóm hàng hóa",
           align: "start",
           sortable: false,
-          value: "employeecode",
+          value: "productcategorycode",
         },
         {
-          text: "Tên nhân viên",
+          text: "Tên nhóm hàng hóa",
           align: "start",
           sortable: false,
-          value: "employeename",
+          value: "productcategoryname",
         },
-        {
-          text: "Email",
-          align: "start",
-          sortable: false,
-          value: "email",
-        },
-        { text: "Chi nhánh", value: "branchname" },
-        { text: "Vai trò", value: "rolename" },
+        { text: "Mô tả nhóm hàng hóa", value: "description" },
+        { text: "Thuộc nhóm hàng hóa", value: "parentname" },
       ],
-      employeeList: [
+      productcategoryList: [
         {
-          employeecode: "NV00001",
-          employeename: "Nguyễn Văn Diện",
-          email: "nguyendien2804@gmail.com",
-          branchid: 1,
-          branchname: "test",
-          rolename: "Quản trị hệ thống",
+          productcategorycode: "PC00001",
+          productcategoryname: "Quản trị hệ thống",
+          description: "Vai trò này sẽ có đầy đủ tất cả các quyền.",
+          parentname: null,
         },
       ],
+      selectedCategory: null,
       itemPaging: [
         {
           text: "10 bản ghi/ trang",
@@ -208,7 +203,6 @@ export default {
       ],
       listFilter: [],
       filterFormula: "",
-      listBranch: [],
     };
   },
 
@@ -221,16 +215,16 @@ export default {
      * Tim kiem theo ma va ten vai tro
      * @param {} data
      */
-    searchEmployee(data) {
+    searchProductcategory(data) {
       console.log(data);
       this.listFilter = [
         {
-          FieldName: "employeecode",
+          FieldName: "productcategorycode",
           Operator: Operator.Like,
           FilterValue: data,
         },
         {
-          FieldName: "employeename",
+          FieldName: "productcategoryname",
           Operator: Operator.Like,
           FilterValue: data,
         },
@@ -239,21 +233,27 @@ export default {
       this.getDefaultData();
     },
     dblclickRow(e, rowData) {
-      let selectedEmployee = rowData.item;
+      this.addData = rowData.item;
       if (this.isShowDelete) return;
-      this.openViewForm(selectedEmployee);
+      this.openEditForm();
     },
     getDefaultData() {
       const me = this;
-      EmployeeService.getPagingData({
+      ProductCategoryService.getPagingData({
         PageIndex: me.pageIndex,
         PageSize: me.pageSize,
-        TableName: "Employee",
+        TableName: "ProductCategory",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
       }).then((result) => {
         if (result && result.data) {
-          me.employeeList = result.data.listPaging;
+          me.productcategoryList = result.data.listPaging;
+          me.listCategoryCombobox = result.data.listPaging
+            .filter((x) => x.parentid == 0)
+            .map((x) => ({
+              value: x.idproductcategory,
+              text: x.productcategoryname,
+            }));
           me.totalPage = result.data.total;
           let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
           me.pageShow =
@@ -262,57 +262,52 @@ export default {
       });
     },
     /**
-     * mở form view
+     * mở form sửa
      */
-    openViewForm(employee) {
-      this.$router.push({
-        name: "m-employee-detail",
-        params: { id: employee["idemployee"], formMode: 3 },
-      });
+    openEditForm() {
+      this.titlePopup = "Sửa nhóm hàng hóa";
+      this.popupMode = FormMode.Edit;
+      this.isShowPopup = true;
     },
     /**
      * mở form thêm mới
      */
     openAddForm() {
-      // this.titlePopup = "Thêm nhân viên";
-      // this.popupMode = FormMode.Add;
-      // this.isShowPopup = true;
-      this.$router.push({
-        name: "m-employee-detail",
-        params: { id: 0, formMode: 1 },
-        query: { mode: FormMode.Add },
-      });
+      this.titlePopup = "Thêm nhóm hàng hóa";
+      this.popupMode = FormMode.Add;
+      this.isShowPopup = true;
     },
     /**
-     * Lưu chi nhánh
+     * Lưu nhóm hàng hóa
      */
-    saveEmployee() {
+    saveData() {
       const me = this;
-      let isValid = me.validateBeforeSave(this.addBranch);
+      let isValid = me.validateBeforeSave(this.addData);
       if (!isValid) {
         return;
       }
       switch (me.popupMode) {
         case FormMode.Add:
-          this.insertBranch();
+          this.insertData();
           break;
         case FormMode.Edit:
-          this.updateBranch();
+          this.updateData();
           break;
         default:
           break;
       }
     },
     /**
-     * thêm mới chi nhánh
+     * thêm mới nhóm hàng hóa
      */
-    insertBranch() {
+    insertData() {
       const me = this;
-      EmployeeService.insertData(this.addBranch).then((result) => {
+      ProductCategoryService.insertData(this.addData).then((result) => {
+        debugger; // eslint-disable-line no-debugger
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Thêm mới chi nhánh thành công!");
-            me.closeAddRolePopup();
+            me.$toast.success("Thêm mới nhóm hàng hóa thành công!");
+            me.closePopup();
             this.getDefaultData();
           } else {
             me.$toast.error(result.data.errorMessage);
@@ -321,23 +316,24 @@ export default {
       });
     },
     /**
-     * sửa chi nhánh
+     * sửa nhóm hàng hóa
      */
-    updateBranch() {
+    updateData() {
       const me = this;
-      EmployeeService.updateData(this.addBranch, this.addBranch?.idbranch).then(
-        (result) => {
-          if (result && result.data) {
-            if (result.data.success) {
-              me.$toast.success("Sửa chi nhánh thành công!");
-              me.closeAddRolePopup();
-              this.getDefaultData();
-            } else {
-              me.$toast.error(result.data.errorMessage);
-            }
+      ProductCategoryService.updateData(
+        this.addData,
+        this.addData?.idproductcategory
+      ).then((result) => {
+        if (result && result.data) {
+          if (result.data.success) {
+            me.$toast.success("Sửa nhóm hàng hóa thành công!");
+            me.closePopup();
+            this.getDefaultData();
+          } else {
+            me.$toast.error(result.data.errorMessage);
           }
         }
-      );
+      });
     },
     /**
      * Kiểm tra dữ liệu trước khi lưu
@@ -353,28 +349,31 @@ export default {
       }
       return true;
     },
-    closeAddRolePopup() {
+    closePopup() {
       this.$refs.form.resetValidation();
       this.isShowPopup = false;
-      this.addBranch = {};
+      this.addData = {};
+      this.selectedCategory = null;
     },
     /**
      * xóa dữ liệu
      */
     deleteData() {
       const me = this;
-      let listID = this.selected.map((x) => x.idemployee).join(",");
-      EmployeeService.deleteMultiple({ ListID: listID }).then((result) => {
-        if (result && result.data) {
-          if (result.data.success) {
-            this.selected = [];
-            me.$toast.success("Xóa nhân viên thành công!");
-            this.getDefaultData();
-          } else {
-            me.$toast.error(result.data.errorMessage);
+      let listID = this.selected.map((x) => x.idproductcategory).join(",");
+      ProductCategoryService.deleteMultiple({ ListID: listID }).then(
+        (result) => {
+          if (result && result.data) {
+            if (result.data.success) {
+              this.selected = [];
+              me.$toast.success("Xóa nhóm hàng hóa thành công!");
+              this.getDefaultData();
+            } else {
+              me.$toast.error(result.data.errorMessage);
+            }
           }
         }
-      });
+      );
     },
   },
 
@@ -389,7 +388,6 @@ export default {
       },
       deep: true,
     },
-
     pageIndex: {
       handler: function (val) {
         if (val > 0) {
@@ -406,10 +404,19 @@ export default {
       },
       deep: true,
     },
+    selectedCategory: {
+      handler: function (val) {
+        if (val) {
+          this.addData["parentid"] = val["value"];
+          this.addData["parentname"] = val["text"];
+        }
+      },
+      deep: true,
+    },
   },
 };
 </script><style lang="sass" scoped>
-@import url('../../../css/management/m-branch.css')
+@import url('../../../css/management/m-productcategory.css')
 </style>
-  
-  
+    
+    

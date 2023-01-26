@@ -28,6 +28,28 @@ const routerManagement = [
         component: () => import(/* webpackChunkName: "promotion" */ '../../views/management/promotion/PromotionList.vue')
       },
       {
+        path: '/management/productcategory',
+        name: 'm-productcategory',
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import(/* webpackChunkName: "productcategory" */ '../../views/management/productcategory/ProductCategoryList.vue')
+      },
+      {
+        path: '/management/product',
+        name: 'm-product',
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import(/* webpackChunkName: "product" */ '../../views/management/product/ProductList.vue')
+      },
+      {
+        path: '/management/product/:id',
+        name: "m-product-detail",
+        component: () =>
+            import(/*webpackChunkName "product" */ '../../views/management/product/ProductDetail.vue')
+      },
+      {
         path: '/management/report',
         name: 'm-report',
         // route level code-splitting

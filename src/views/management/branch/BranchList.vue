@@ -421,8 +421,9 @@ export default {
     },
   },
 };
-</script><style lang="sass" scoped>
-@import url('../../../css/management/m-branch.css')
+</script>
+<style  scoped>
+@import url("../../../css/management/m-branch.css");
 </style>
   
   

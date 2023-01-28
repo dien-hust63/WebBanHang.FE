@@ -1,26 +1,27 @@
 <template>
-  <div class="bk-role-list bk-list">
+  <div class="bk-productcategory-list bk-list">
     <MHeader
       :title="title"
       :subtitle="subtitle"
-      addBtn='Thêm chi nhánh'
+      addBtn='Thêm nhóm hàng hóa'
       @openAddForm="openAddForm"
       @deleteData="deleteData"
       :isShowDelete="isShowDelete"
-      deleteBtn="Xóa chi nhánh"
-      searchTitle="Tìm kiếm theo mã, tên chi nhánh"
-      @onSearch="searchBranch"
+      deleteBtn="Xóa nhóm hàng hóa"
+      searchTitle="Tìm kiếm theo mã, tên nhóm hàng hóa"
+      @onSearch="searchProductcategory"
     />
     <div class="bk-list-body">
       <v-data-table
         v-model="selected"
         :headers="headers"
-        :items="branchList"
-        item-key="branchcode"
+        :items="productcategoryList"
+        item-key="productcategorycode"
         show-select
         hide-default-footer
         fixed-header
         @dblclick:row="dblclickRow"
+        no-data-text="Không có dữ liệu"
       >
       </v-data-table>
     </div>
@@ -62,51 +63,51 @@
     </div>
     <base-popup
       :isShowPopup="isShowPopup"
-      @closePopup="closeAddRolePopup"
+      @closePopup="closePopup"
       maxwidth="760px"
       :title="titlePopup"
-      @saveData="saveBranch"
+      @saveData="saveData"
     >
       <v-card-text>
         <v-form
           ref="form"
           v-model="validForm"
           lazy-validation
-          class="role-form"
+          class="productcategory-form"
         >
           <v-container>
             <v-row>
               <v-col cols="12">
                 <v-text-field
-                  label="Mã chi nhánh (*)"
+                  label="Mã nhóm hàng hóa (*)"
                   required
-                  :rules="[rules.branchCodeRule]"
-                  v-model="addBranch.branchcode"
+                  :rules="[rules.productcategoryCodeRule]"
+                  v-model="addData.productcategorycode"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-text-field
-                  label="Tên chi nhánh (*)"
-                  :rules="[rules.branchNameRule]"
+                  label="Tên nhóm hàng hóa (*)"
+                  :rules="[rules.productcategoryNameRule]"
                   required
-                  v-model="addBranch.branchname"
+                  v-model="addData.productcategoryname"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-text-field
-                  label="Địa chỉ"
+                  label="Mô tả nhóm hàng hóa"
                   persistent-hint
                   required
-                  v-model="addBranch.address"
+                  v-model="addData.description"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
                 <v-combobox
-                  label="Trưởng chi nhánh"
-                  v-model="selectedManager"
+                  label="Thuộc nhóm hàng hóa"
+                  v-model="selectedCategory"
                   item-text="text"
                   item-value="value"
-                  :items="listEmployee"
+                  :items="listCategoryCombobox"
                   return-object
                 ></v-combobox>
               </v-col>
@@ -118,16 +119,15 @@
     </base-popup>
   </div>
 </template>
-<script>
+  <script>
 import MHeader from "../../../components/management/header/MHeader.vue";
 import { FactoryService } from "../../../service/factory/factory.service";
 import BasePopup from "../../../components/common/BasePopup.vue";
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
-const BranchService = FactoryService.get("branchService");
-const EmployeeService = FactoryService.get("employeeService");
+const ProductCategoryService = FactoryService.get("productcategoryService");
 export default {
-  name: "BranchList",
+  name: "ProductCategoryList",
   components: {
     MHeader,
     BasePopup,
@@ -137,52 +137,56 @@ export default {
       isShowDelete: false,
       validForm: true,
       rules: {
-        branchCodeRule: (value) => !!value || "Mã chi nhánh bắt buộc nhập.",
-        branchNameRule: (value) => !!value || "Tên chi nhánh bắt buộc nhập.",
+        productcategoryCodeRule: (value) =>
+          !!value || "Mã nhóm hàng hóa bắt buộc nhập.",
+        productcategoryNameRule: (value) =>
+          !!value || "Tên nhóm hàng hóa bắt buộc nhập.",
         emailMatch: () => `Email hoặc mật khẩu không chính xác.`,
       },
-      titlePopup: "Thêm chi nhánh",
+      titlePopup: "Thêm nhóm hàng hóa",
       popupMode: FormMode.Add,
-      addBranch: {},
+      addData: {},
       isShowPopup: false,
       maxPageShow: 7,
       pageShow: 1,
       pageSize: 10,
       pageIndex: 1,
       totalPage: 0,
-      title: "Chi nhánh",
-      subtitle: "Danh sách các chi nhánh",
+      title: "Nhóm hàng hóa",
+      subtitle: "Danh sách nhóm hàng hóa.",
       selected: [],
+      listCategoryCombobox: [],
       headers: [
         {
-          text: "ID chi nhánh",
+          text: "ID nhóm hàng hóa",
           align: " d-none",
           sortable: false,
-          value: "idbranch",
+          value: "idproductcategory",
         },
         {
-          text: "Mã chi nhánh",
+          text: "Mã nhóm hàng hóa",
           align: "start",
           sortable: false,
-          value: "branchcode",
+          value: "productcategorycode",
         },
         {
-          text: "Tên chi nhánh",
+          text: "Tên nhóm hàng hóa",
           align: "start",
           sortable: false,
-          value: "branchname",
+          value: "productcategoryname",
         },
-        { text: "Địa chỉ", value: "address" },
-        { text: "Trưởng chi nhánh", value: "branchmanagername" },
+        { text: "Mô tả nhóm hàng hóa", value: "description" },
+        { text: "Thuộc nhóm hàng hóa", value: "parentname" },
       ],
-      branchList: [
+      productcategoryList: [
         {
-          branchcode: "R0001",
-          branchname: "Quản trị hệ thống",
-          address: "Vai trò này sẽ có đầy đủ tất cả các quyền.",
-          branchmanagername: "test",
+          productcategorycode: "PC00001",
+          productcategoryname: "Quản trị hệ thống",
+          description: "Vai trò này sẽ có đầy đủ tất cả các quyền.",
+          parentname: null,
         },
       ],
+      selectedCategory: null,
       itemPaging: [
         {
           text: "10 bản ghi/ trang",
@@ -199,49 +203,28 @@ export default {
       ],
       listFilter: [],
       filterFormula: "",
-      listEmployee: [],
-      selectedManager: null,
     };
   },
 
   created() {
     this.getDefaultData();
-    this.getAllEmployee();
   },
 
   methods: {
     /**
-     * Lấy danh sách toàn bộ nhân viên
-     */
-    getAllEmployee() {
-      const me = this;
-      EmployeeService.getAllData()
-        .then((result) => {
-          if (result && result.data) {
-            me.listEmployee = result.data.data.map((x) => ({
-              value: x.idemployee,
-              text: `${x.employeename} (${x.employeecode})`,
-            }));
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    },
-    /**
      * Tim kiem theo ma va ten vai tro
      * @param {} data
      */
-    searchBranch(data) {
+    searchProductcategory(data) {
       console.log(data);
       this.listFilter = [
         {
-          FieldName: "branchcode",
+          FieldName: "productcategorycode",
           Operator: Operator.Like,
           FilterValue: data,
         },
         {
-          FieldName: "branchname",
+          FieldName: "productcategoryname",
           Operator: Operator.Like,
           FilterValue: data,
         },
@@ -250,21 +233,27 @@ export default {
       this.getDefaultData();
     },
     dblclickRow(e, rowData) {
-      this.addBranch = rowData.item;
+      this.addData = rowData.item;
       if (this.isShowDelete) return;
       this.openEditForm();
     },
     getDefaultData() {
       const me = this;
-      BranchService.getPagingData({
+      ProductCategoryService.getPagingData({
         PageIndex: me.pageIndex,
         PageSize: me.pageSize,
-        TableName: "Branch",
+        TableName: "ProductCategory",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
       }).then((result) => {
         if (result && result.data) {
-          me.branchList = result.data.listPaging;
+          me.productcategoryList = result.data.listPaging;
+          me.listCategoryCombobox = result.data.listPaging
+            .filter((x) => x.parentid == 0)
+            .map((x) => ({
+              value: x.idproductcategory,
+              text: x.productcategoryname,
+            }));
           me.totalPage = result.data.total;
           let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
           me.pageShow =
@@ -276,7 +265,7 @@ export default {
      * mở form sửa
      */
     openEditForm() {
-      this.titlePopup = "Sửa chi nhánh";
+      this.titlePopup = "Sửa nhóm hàng hóa";
       this.popupMode = FormMode.Edit;
       this.isShowPopup = true;
     },
@@ -284,40 +273,41 @@ export default {
      * mở form thêm mới
      */
     openAddForm() {
-      this.titlePopup = "Thêm chi nhánh";
+      this.titlePopup = "Thêm nhóm hàng hóa";
       this.popupMode = FormMode.Add;
       this.isShowPopup = true;
     },
     /**
-     * Lưu chi nhánh
+     * Lưu nhóm hàng hóa
      */
-    saveBranch() {
+    saveData() {
       const me = this;
-      let isValid = me.validateBeforeSave(this.addBranch);
+      let isValid = me.validateBeforeSave(this.addData);
       if (!isValid) {
         return;
       }
       switch (me.popupMode) {
         case FormMode.Add:
-          this.insertBranch();
+          this.insertData();
           break;
         case FormMode.Edit:
-          this.updateBranch();
+          this.updateData();
           break;
         default:
           break;
       }
     },
     /**
-     * thêm mới chi nhánh
+     * thêm mới nhóm hàng hóa
      */
-    insertBranch() {
+    insertData() {
       const me = this;
-      BranchService.insertData(this.addBranch).then((result) => {
+      ProductCategoryService.insertData(this.addData).then((result) => {
+        debugger; // eslint-disable-line no-debugger
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Thêm mới chi nhánh thành công!");
-            me.closeAddRolePopup();
+            me.$toast.success("Thêm mới nhóm hàng hóa thành công!");
+            me.closePopup();
             this.getDefaultData();
           } else {
             me.$toast.error(result.data.errorMessage);
@@ -326,23 +316,24 @@ export default {
       });
     },
     /**
-     * sửa chi nhánh
+     * sửa nhóm hàng hóa
      */
-    updateBranch() {
+    updateData() {
       const me = this;
-      BranchService.updateData(this.addBranch, this.addBranch?.idbranch).then(
-        (result) => {
-          if (result && result.data) {
-            if (result.data.success) {
-              me.$toast.success("Sửa chi nhánh thành công!");
-              me.closeAddRolePopup();
-              this.getDefaultData();
-            } else {
-              me.$toast.error(result.data.errorMessage);
-            }
+      ProductCategoryService.updateData(
+        this.addData,
+        this.addData?.idproductcategory
+      ).then((result) => {
+        if (result && result.data) {
+          if (result.data.success) {
+            me.$toast.success("Sửa nhóm hàng hóa thành công!");
+            me.closePopup();
+            this.getDefaultData();
+          } else {
+            me.$toast.error(result.data.errorMessage);
           }
         }
-      );
+      });
     },
     /**
      * Kiểm tra dữ liệu trước khi lưu
@@ -358,28 +349,31 @@ export default {
       }
       return true;
     },
-    closeAddRolePopup() {
+    closePopup() {
       this.$refs.form.resetValidation();
       this.isShowPopup = false;
-      this.addBranch = {};
+      this.addData = {};
+      this.selectedCategory = null;
     },
     /**
      * xóa dữ liệu
      */
     deleteData() {
       const me = this;
-      let listID = this.selected.map((x) => x.idbranch).join(",");
-      BranchService.deleteMultiple({ ListID: listID }).then((result) => {
-        if (result && result.data) {
-          if (result.data.success) {
-            this.selected = [];
-            me.$toast.success("Xóa chi nhánh thành công!");
-            this.getDefaultData();
-          } else {
-            me.$toast.error(result.data.errorMessage);
+      let listID = this.selected.map((x) => x.idproductcategory).join(",");
+      ProductCategoryService.deleteMultiple({ ListID: listID }).then(
+        (result) => {
+          if (result && result.data) {
+            if (result.data.success) {
+              this.selected = [];
+              me.$toast.success("Xóa nhóm hàng hóa thành công!");
+              this.getDefaultData();
+            } else {
+              me.$toast.error(result.data.errorMessage);
+            }
           }
         }
-      });
+      );
     },
   },
 
@@ -390,15 +384,6 @@ export default {
           this.isShowDelete = true;
         } else {
           this.isShowDelete = false;
-        }
-      },
-      deep: true,
-    },
-    selectedManager: {
-      handler: function (val) {
-        if (val) {
-          this.addBranch["branchmanagerid"] = val["value"];
-          this.addBranch["branchmanagername"] = val["text"];
         }
       },
       deep: true,
@@ -419,11 +404,19 @@ export default {
       },
       deep: true,
     },
+    selectedCategory: {
+      handler: function (val) {
+        if (val) {
+          this.addData["parentid"] = val["value"];
+          this.addData["parentname"] = val["text"];
+        }
+      },
+      deep: true,
+    },
   },
 };
-</script>
-<style  scoped>
-@import url("../../../css/management/m-branch.css");
+</script><style lang="sass" scoped>
+@import url('../../../css/management/m-productcategory.css')
 </style>
-  
-  
+    
+    

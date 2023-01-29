@@ -64,9 +64,9 @@ export default {
           name: "VPGD: Đội 6, Xã Phương Đình, Huyện Đan Phượng, Thành phố Hà nội, Việt nam",
         },
         { name: "Facebook thời trang nam: 360ForMen" },
-        { name: "Hotline: 0973285886 – 0862052988" },
+        { name: "Hotline: 0337877093" },
         { name: "Email: 360formen@gmail.com" },
-        { name: "Website: https://360formen.vn/" },
+        { name: "Website: https://360formen.netlify.app/" },
       ],
     };
   },

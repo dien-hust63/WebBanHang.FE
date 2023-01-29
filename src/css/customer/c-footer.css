@@ -1,7 +1,7 @@
 .bkc-footer{
     background-color: #fff;
     border-top: 1px solid #bfbfbf;
-    padding: 30px 40px;
+    padding: 30px 40px 0 40px;
     box-sizing: border-box;
 }
 
@@ -25,5 +25,5 @@
     align-items: center;
     justify-content: center;
     border-top: 1px solid #bfbfbf;
-    height: 60px;
+    padding: 10px;
 }

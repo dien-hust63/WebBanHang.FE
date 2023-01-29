@@ -7,7 +7,7 @@ html, body{
 }
 
 .v-main__wrap{
-    min-width: 900px !important;
+    /* min-width: 900px !important; */
     max-height: 100vh !important;
 }
 .bk-flex{

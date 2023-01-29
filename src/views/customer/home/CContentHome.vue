@@ -2,7 +2,7 @@
   <div class="bkc-content-home">
     <v-carousel
       :show-arrows="false"
-      height="800px"
+      height="calc(100vh - 170px)"
       cycle
     >
       <v-carousel-item
@@ -11,12 +11,37 @@
         :src="item.src"
       ></v-carousel-item>
     </v-carousel>
-
+    <div class="c-product-area">
+      <div class="c-product-area-title">
+        SẢN PHẨM BÁN CHẠY
+      </div>
+      <div class="c-product-area-content">
+        <v-row justify="center">
+          <v-col
+            v-for="n in 12"
+            :key="n"
+            cols="12"
+            sm="6"
+            xs="6"
+            md="3"
+            class="px-4"
+          >
+            <div class="c-product-area-item">
+              <CProductCard :product="product" />
+            </div>
+          </v-col>
+        </v-row>
+      </div>
+    </div>
   </div>
 </template>
   <script>
+import CProductCard from "../productcard/ProductCard.vue";
 export default {
   name: "CContentHome",
+  components: {
+    CProductCard,
+  },
   data() {
     return {
       items: [
@@ -30,6 +55,11 @@ export default {
           src: "https://nvdien.blob.core.windows.net/images/banner-web3.jpg",
         },
       ],
+      product: {
+        mainimage: "https://nvdien.blob.core.windows.net/images/test.jpg",
+        productname: "Áo khoác nam AKHTK305",
+        sellprice: "949.000",
+      },
     };
   },
 };

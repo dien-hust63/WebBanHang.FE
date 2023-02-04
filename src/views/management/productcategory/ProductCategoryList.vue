@@ -303,7 +303,6 @@ export default {
     insertData() {
       const me = this;
       ProductCategoryService.insertData(this.addData).then((result) => {
-        debugger; // eslint-disable-line no-debugger
         if (result && result.data) {
           if (result.data.success) {
             me.$toast.success("Thêm mới nhóm hàng hóa thành công!");

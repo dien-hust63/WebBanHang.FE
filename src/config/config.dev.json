@@ -1,4 +1,4 @@
 {
-    "BASE_URL_API":"https://localhost:44329/api/v1",
+    "BASE_URL_API":"https://webbanhangapi20230205164251.azurewebsites.net/api/v1",
     "LOCATION_URL_API":"https://dev-online-gateway.ghn.vn"
 }

@@ -164,13 +164,7 @@ export default {
         },
         { text: "Mô tả vai trò", value: "description" },
       ],
-      roleList: [
-        {
-          rolecode: "R0001",
-          rolename: "Quản trị hệ thống",
-          description: "Vai trò này sẽ có đầy đủ tất cả các quyền.",
-        },
-      ],
+      roleList: [],
       itemPaging: [
         {
           text: "10 bản ghi/ trang",
@@ -229,6 +223,7 @@ export default {
         TableName: "Role",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
+        ListOrderBy: [],
       }).then((result) => {
         if (result && result.data) {
           me.roleList = result.data.listPaging;

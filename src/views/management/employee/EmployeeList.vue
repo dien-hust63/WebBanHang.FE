@@ -182,16 +182,7 @@ export default {
         { text: "Chi nhánh", value: "branchname" },
         { text: "Vai trò", value: "rolename" },
       ],
-      employeeList: [
-        {
-          employeecode: "NV00001",
-          employeename: "Nguyễn Văn Diện",
-          email: "nguyendien2804@gmail.com",
-          branchid: 1,
-          branchname: "test",
-          rolename: "Quản trị hệ thống",
-        },
-      ],
+      employeeList: [],
       itemPaging: [
         {
           text: "10 bản ghi/ trang",
@@ -251,6 +242,7 @@ export default {
         TableName: "Employee",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
+        ListOrderBy: [],
       }).then((result) => {
         if (result && result.data) {
           me.employeeList = result.data.listPaging;

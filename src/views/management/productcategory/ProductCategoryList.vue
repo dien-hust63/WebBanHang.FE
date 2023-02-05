@@ -178,14 +178,7 @@ export default {
         { text: "Mô tả nhóm hàng hóa", value: "description" },
         { text: "Thuộc nhóm hàng hóa", value: "parentname" },
       ],
-      productcategoryList: [
-        {
-          productcategorycode: "PC00001",
-          productcategoryname: "Quản trị hệ thống",
-          description: "Vai trò này sẽ có đầy đủ tất cả các quyền.",
-          parentname: null,
-        },
-      ],
+      productcategoryList: [],
       selectedCategory: null,
       itemPaging: [
         {
@@ -245,6 +238,7 @@ export default {
         TableName: "ProductCategory",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
+        ListOrderBy: [],
       }).then((result) => {
         if (result && result.data) {
           me.productcategoryList = result.data.listPaging;

@@ -126,16 +126,7 @@ export default {
         { text: "Giá vốn", value: "costprice" },
         { text: "Giá bán", value: "sellprice" },
       ],
-      productList: [
-        {
-          productcode: "NV00001",
-          productname: "Nguyễn Văn Diện",
-          email: "nguyendien2804@gmail.com",
-          branchid: 1,
-          branchname: "test",
-          rolename: "Quản trị hệ thống",
-        },
-      ],
+      productList: [],
       itemPaging: [
         {
           text: "10 bản ghi/ trang",
@@ -194,6 +185,7 @@ export default {
         TableName: "Product",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
+        ListOrderBy: [],
       }).then((result) => {
         if (result && result.data) {
           me.productList = result.data.listPaging;

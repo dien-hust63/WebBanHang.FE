@@ -175,14 +175,7 @@ export default {
         { text: "Địa chỉ", value: "address" },
         { text: "Trưởng chi nhánh", value: "branchmanagername" },
       ],
-      branchList: [
-        {
-          branchcode: "R0001",
-          branchname: "Quản trị hệ thống",
-          address: "Vai trò này sẽ có đầy đủ tất cả các quyền.",
-          branchmanagername: "test",
-        },
-      ],
+      branchList: [],
       itemPaging: [
         {
           text: "10 bản ghi/ trang",
@@ -262,6 +255,7 @@ export default {
         TableName: "Branch",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
+        ListOrderBy: [],
       }).then((result) => {
         if (result && result.data) {
           me.branchList = result.data.listPaging;

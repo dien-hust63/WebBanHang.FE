@@ -17,7 +17,7 @@
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
-      <v-btn
+      <!-- <v-btn
         v-show="isViewMode && currentData.statusid != 2"
         color="success"
         @click="activeAccount"
@@ -38,7 +38,7 @@
           mdi-block-helper
         </v-icon>
         Ngừng kích hoạt
-      </v-btn>
+      </v-btn> -->
       <v-btn
         v-show="isViewMode"
         color="#F4F5F9"
@@ -63,75 +63,65 @@
       </v-btn>
     </v-toolbar>
     <div class="bk-detail-content">
-      <v-card-text>
-        <v-form
-          ref="form"
-          v-model="validForm"
-          lazy-validation
-          class="role-form"
-        >
-          <v-container>
-            <v-row>
-              <v-col
-                cols="12"
-                sm="5"
-                class="px-8"
-              >
-                <v-text-field
-                  label="Mã nhân viên (*)"
-                  :disabled="isViewMode"
-                  v-model="currentData.employeecode"
-                  :rules="[rules.employeeCodeRule]"
-                ></v-text-field>
-              </v-col>
-              <v-col sm="2"></v-col>
-              <v-col
-                cols="12"
-                sm="5"
-                class="px-8"
-              >
-                <v-text-field
-                  label="Tên nhân viên (*)"
-                  :disabled="isViewMode"
-                  v-model="currentData.employeename"
-                  :rules="[rules.employeeNameRule]"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col
-                cols="12"
-                sm="5"
-                class="px-8"
-              >
-                <v-text-field
-                  label="Email (*)"
-                  :disabled="isViewMode"
-                  v-model="currentData.email"
-                  :rules="rules.emailMatch"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col sm="2"></v-col>
-              <v-col
-                cols="12"
-                sm="5"
-                class="px-8"
-              >
-                <v-combobox
-                  label="Chi nhánh"
-                  v-model="selectedBranch"
-                  item-text="text"
-                  item-value="value"
-                  :items="listBranch"
-                  return-object
-                  :disabled="isViewMode"
-                ></v-combobox>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-form>
-      </v-card-text>
+      <div class="bk-role-common-info">
+        <div class="title mt-4">Thông tin chung</div>
+        <v-card-text>
+          <v-form
+            ref="form"
+            v-model="validForm"
+            lazy-validation
+            class="role-form"
+          >
+            <v-container>
+              <v-row>
+                <v-col
+                  cols="12"
+                  sm="5"
+                  class="px-8"
+                >
+                  <v-text-field
+                    label="Mã Vai trò (*)"
+                    :disabled="isViewMode"
+                    v-model="currentData.rolecode"
+                    :rules="[rules.roleCodeRule]"
+                  ></v-text-field>
+                </v-col>
+                <v-col sm="2"></v-col>
+                <v-col
+                  cols="12"
+                  sm="5"
+                  class="px-8"
+                >
+                  <v-text-field
+                    label="Tên vai trò (*)"
+                    :disabled="isViewMode"
+                    v-model="currentData.rolename"
+                    :rules="[rules.roleNameRule]"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col
+                  cols="12"
+                  sm="5"
+                  class="px-8"
+                >
+                  <v-text-field
+                    label="Mô tả"
+                    :disabled="isViewMode"
+                    v-model="currentData.description"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-form>
+        </v-card-text>
+      </div>
+
+      <div class="bk-role-permission-module">
+        <div class="title">Phân quyền phân hệ</div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -141,19 +131,20 @@ import FormMode from "../../../enum/FormModeEnum";
 import AccountStatus from "../../../enum/AccountStatusEnum";
 import { FactoryService } from "../../../service/factory/factory.service";
 const EmployeeService = FactoryService.get("employeeService");
+const RoleService = FactoryService.get("roleService");
 const BranchService = FactoryService.get("branchService");
 export default {
-  name: "EmployeeDetail",
+  name: "RoleDetail",
   data() {
     return {
-      title: "Thêm nhân viên",
+      title: "Thêm vai trò",
       formMode: FormMode.Add,
       isViewMode: false,
       currentData: {},
       validForm: false,
       rules: {
-        employeeCodeRule: (value) => !!value || "Mã nhân viên bắt buộc nhập.",
-        employeeNameRule: (value) => !!value || "Tên nhân viên bắt buộc nhập.",
+        roleCodeRule: (value) => !!value || "Mã vai trò bắt buộc nhập.",
+        roleNameRule: (value) => !!value || "Tên vai trò bắt buộc nhập.",
         emailMatch: [
           (v) => !!v || "E-mail bắt buộc nhập.",
           (v) => /.+@.+\..+/.test(v) || "E-mail không hợp lệ.",
@@ -200,11 +191,11 @@ export default {
         return;
       }
       let id = this.$route.params.id;
-      EmployeeService.getDataById(id)
+      RoleService.getDataById(id)
         .then((result) => {
           if (result && result.data) {
             me.currentData = result.data.data;
-            me.title = `Nhân viên ${me.currentData.employeecode} - ${me.currentData.employeename}`;
+            me.title = `Vai trò ${me.currentData.rolecode} - ${me.currentData.rolename}`;
           }
         })
         .catch((e) => {

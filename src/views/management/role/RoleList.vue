@@ -213,7 +213,7 @@ export default {
     dblclickRow(e, rowData) {
       this.addRole = rowData.item;
       if (this.isShowDelete) return;
-      this.openEditForm();
+      this.openViewForm(this.addRole);
     },
     getDefaultData() {
       const me = this;
@@ -269,6 +269,16 @@ export default {
         default:
           break;
       }
+    },
+
+    /**
+     * mở form view
+     */
+    openViewForm(data) {
+      this.$router.push({
+        name: "m-role-detail",
+        params: { id: data["idrole"], formMode: 3 },
+      });
     },
     /**
      * thêm mới vai trò

@@ -87,6 +87,12 @@ const routerManagement = [
                     component: () =>
                         import(/*webpackChunkName "role" */ '../../views/management/role/RoleList.vue')
                 },
+                {
+                  path: 'role/:id',
+                  name: "m-role-detail",
+                  component: () =>
+                      import(/*webpackChunkName "roledetail" */ '../../views/management/role/RoleDetail.vue')
+                },
             ]
       },
 ]

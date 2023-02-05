@@ -181,6 +181,7 @@ export default {
         },
         { text: "Chi nhánh", value: "branchname" },
         { text: "Vai trò", value: "rolename" },
+        { text: "Trạng thái", value: "statustext" },
       ],
       employeeList: [],
       itemPaging: [

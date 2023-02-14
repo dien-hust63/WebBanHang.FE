@@ -10,7 +10,7 @@
     <img
       class="bk-image-upload-icon"
       alt="Ảnh hàng hóa"
-      :style="{ height: height,'min-width': minwidth, 'max-width':maxwidth}"
+      :style="{ 'width': width}"
       :src="newImage || emptyImage"
       @click="$refs.imageUpload.click()"
     />
@@ -22,14 +22,16 @@ export default {
   name: "ImageUpload",
   data() {
     return {
-      height: "300px",
-      width: "100px",
-      minwidth: "200px",
-      maxwidth: "300px",
       newImage: "",
       newImageRaw: null,
       emptyImage,
     };
+  },
+  props: {
+    height: String,
+    width: String,
+    minwidth: String,
+    maxwidth: String,
   },
   created() {},
   methods: {

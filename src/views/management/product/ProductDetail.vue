@@ -135,90 +135,166 @@
                 sm="6"
                 class="px-16 product-detail-main-image"
               >
-                <image-upload ref="imageUpload" />
+                <image-upload
+                  ref="imageUpload"
+                  width="300px"
+                />
               </v-col>
             </v-row>
           </v-container>
         </v-form>
       </v-card-text>
-      <div class="title">Thuộc tính</div>
-      <div class="product-detail-attribute">
-        <div class="product-detail-attribute-color">
-          <div class="attribute-title mr-4">Màu sắc:</div>
-          <div class="attribute-color-content">
-            <v-combobox
-              v-model="selectedColor"
-              :items="listColor"
-              return-object
-              :disabled="isViewMode"
-              width="300px"
-              multiple
-              chips
-              placeholder="Chọn màu sắc"
-              clearable
-            ></v-combobox>
+      <div class="product-detail-list-bonus">
+        <div class="product-detail-attribute-area">
+          <div
+            class="product-detail-area-title"
+            @click="isShowGroupAttribute = !isShowGroupAttribute"
+          >
+            <div class="title">Thuộc tính</div>
+            <i class="fas fa-chevron-down"></i>
           </div>
 
-        </div>
-        <div class="product-detail-attribute-size">
-          <div class="attribute-title mr-4">Kích thước:</div>
-          <div class="attribute-size-content">
-            <v-combobox
-              v-model="selectedSize"
-              :items="listSize"
-              return-object
-              :disabled="isViewMode"
-              width="300px"
-              multiple
-              chips
-              placeholder="Chọn kích thước"
-              clearable
-            ></v-combobox>
+          <div
+            class="product-detail-attribute"
+            v-show="isShowGroupAttribute"
+          >
+            <div class="product-detail-attribute-color">
+              <div class="attribute-title mr-4">Màu sắc:</div>
+              <div class="attribute-color-content">
+                <table
+                  class="bkc-table-cart"
+                  v-if="listColorSelected.length > 0"
+                >
+                  <tr>
+                    <th>Màu sắc</th>
+                    <th class="pl-8">Hình ảnh</th>
+                    <th></th>
+                  </tr>
+                  <tr
+                    v-for="(item, index) in listColorSelected"
+                    :key="index"
+                    class="bkc-table-cart-row"
+                  >
+                    <td class="bkc-table-cart-cell">
+                      <v-combobox
+                        v-model="item.color"
+                        :items="listColor"
+                        :disabled="isViewMode"
+                        width="300px"
+                        placeholder="Chọn màu sắc"
+                        chips
+                        clearable
+                      ></v-combobox>
+                    </td>
+                    <td class="bkc-table-cart-cell ">
+                      <div class="bkc-table-cart-product-name pl-8">
+                        <div class="table-cart-img">
+                          <image-upload
+                            ref="imageUpload"
+                            width="100px"
+                          />
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div>
+                        <v-icon
+                          class="delete-icon"
+                          @click="removeColor(index)"
+                        >mdi-delete</v-icon>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+                <v-btn @click="insertColorAttribute()">Thêm dòng</v-btn>
+              </div>
+            </div>
+            <div class="product-detail-attribute-size">
+              <div class="attribute-title mr-4">Kích thước:</div>
+              <div class="attribute-size-content">
+                <v-combobox
+                  v-model="listSizeSelected"
+                  :items="listSize"
+                  return-object
+                  :disabled="isViewMode"
+                  width="300px"
+                  multiple
+                  chips
+                  placeholder="Chọn kích thước"
+                  clearable
+                ></v-combobox>
+              </div>
+            </div>
           </div>
+        </div>
+        <div class="product-detail-instance-area mt-4 mb-4">
+          <div
+            class="product-detail-area-title"
+            @click="isShowGroupInstance = !isShowGroupInstance"
+          >
+            <div class="title">Danh sách hàng hóa cùng loại</div>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div
+            class="product-detail-area-instance-content"
+            v-show="isShowGroupInstance"
+          >
+            <table class="bkc-table-product-detail-instance">
+              <tr class="bkc-table-cart-header">
+                <th>Tên</th>
+                <th>Mã hàng</th>
+                <th>Giá vốn</th>
+                <th>Giá bán</th>
+                <th>Tồn kho</th>
+                <th></th>
+              </tr>
+              <tr
+                v-for="(item, index) in listProductDetail"
+                :key="index"
+                class="bkc-table-cart-row"
+              >
+                <td class="bkc-table-cart-cell">
+                  {{item.productname}}
+                </td>
+                <td class="bkc-table-cart-cell">{{item.productcode}}</td>
+                <td class="bkc-table-cart-cell">
+                  <v-text-field
+                    variant="underlined"
+                    v-model="item.costprice"
+                    type="number"
+                  ></v-text-field>
+                </td>
+                <td class="bkc-table-cart-cell">
+                  <v-text-field
+                    variant="underlined"
+                    v-model="item.sellprice"
+                    type="number"
+                  ></v-text-field>
+                </td>
+                <td class="bkc-table-cart-cell">
+                  <v-text-field
+                    variant="underlined"
+                    v-model="item.inventory"
+                    type="number"
+                  ></v-text-field>
+                </td>
+                <td>
+                  <div>
+                    <v-icon
+                      class="delete-icon"
+                      @click="removeProductItem(index)"
+                    >mdi-delete</v-icon>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
         </div>
       </div>
-    </div>
-    <!-- <base-popup
-      :isShowPopup="isOpenInventory"
-      @closePopup="closeInventoryPopup"
-      maxwidth="760px"
-      title="Thiết lập tồn kho các chi nhánh"
-      @saveData="saveInventory"
-    >
-      <v-card-text>
-        <v-form
-          ref="form"
-          v-model="validInventoryForm"
-          lazy-validation
-          class="inventory-form"
-        >
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  label="Mã vai trò (*)"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  label="Tên vai trò (*)"
-                  required
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  label="Mô tả vai trò"
-                  persistent-hint
-                  required
-                ></v-text-field>
-              </v-col>
 
-            </v-row>
-          </v-container>
-        </v-form>
-      </v-card-text>
-    </base-popup> -->
+    </div>
   </div>
 </template>
 
@@ -230,15 +306,17 @@ import { FactoryService } from "../../../service/factory/factory.service";
 const ProductService = FactoryService.get("productService");
 const BranchService = FactoryService.get("branchService");
 const ProductCategoryService = FactoryService.get("productcategoryService");
-// import BasePopup from "../../../components/common/BasePopup.vue";
 export default {
   name: "ProductDetail",
   components: {
     ImageUpload,
-    // BasePopup,
   },
   data() {
     return {
+      listProductDetail: [],
+      listColorSelected: [],
+      isShowGroupInstance: false,
+      isShowGroupAttribute: false,
       title: "Thêm hàng hóa",
       formMode: FormMode.Add,
       isViewMode: false,
@@ -260,7 +338,7 @@ export default {
       accountStatus: AccountStatus.NotActive,
       isOpenInventory: false,
       validInventoryForm: false,
-      listSize: ["XL", "L", "M"],
+      listSize: ["XS", "S", "M", "L", "XL", "XXL"],
       listColor: [
         "Đen",
         "Trắng",
@@ -275,8 +353,8 @@ export default {
         "Xanh lá cây",
         "Xanh dương",
       ],
-      selectedSize: [],
-      selectedColor: [],
+      listSizeSelected: [],
+      selectedColor: "",
     };
   },
   created() {
@@ -289,6 +367,20 @@ export default {
     this.getDetailInfo();
   },
   methods: {
+    removeProductItem(index) {
+      this.listProductDetail.splice(index, 1);
+    },
+    removeColor(index) {
+      this.listColorSelected.splice(index, 1);
+    },
+    /**
+     * Thêm 1 màu sắc
+     */
+    insertColorAttribute() {
+      this.listColorSelected.push({
+        color: "",
+      });
+    },
     /**
      * Lấy danh sách toàn bộ chi nháh
      */
@@ -467,6 +559,43 @@ export default {
         if (val) {
           this.currentData["categoryid"] = val["value"];
           this.currentData["categoryname"] = val["text"];
+        }
+      },
+      deep: true,
+    },
+    listColorSelected: {
+      handler: function (oldval, val) {
+        if (val && val.length > 0) {
+          const me = this;
+          me.isShowGroupInstance = true;
+          let countP = 0;
+          me.listProductDetail = [];
+          val.forEach((element) => {
+            if (element["color"] != "") {
+              if (me.listSizeSelected && me.listSizeSelected > 0) {
+                me.listSizeSelected.forEach((size) => {
+                  countP++;
+                  me.listProductDetail.push({
+                    productname: `${me.currentData["productname"]} - ${element["color"]} - ${size["size"]}`,
+                    productcode: `${me.currentData["productcode"]}-${countP}`,
+                    costprice: `${me.currentData["costprice"]}`,
+                    sellprice: `${me.currentData["sellprice"]}`,
+                    inventory: `${me.currentData["inventory"]}`,
+                  });
+                });
+              } else {
+                me.listProductDetail = [];
+                countP++;
+                me.listProductDetail.push({
+                  productname: `${me.currentData["productname"]} - ${element["color"]}`,
+                  productcode: `${me.currentData["productcode"]}-${countP}`,
+                  costprice: `${me.currentData["costprice"]}`,
+                  sellprice: `${me.currentData["sellprice"]}`,
+                  inventory: `${me.currentData["inventory"]}`,
+                });
+              }
+            }
+          });
         }
       },
       deep: true,

@@ -23,6 +23,17 @@
         @dblclick:row="dblclickRow"
         no-data-text="Không có dữ liệu"
       >
+        <template slot="body.append">
+          <tr>
+            <th>Tổng</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>3450</th>
+          </tr>
+        </template>
       </v-data-table>
     </div>
     <div class="bk-list-footer bk-flex bk-flex-between">
@@ -125,6 +136,7 @@ export default {
         },
         { text: "Giá vốn", value: "costprice" },
         { text: "Giá bán", value: "sellprice" },
+        { text: "Tồn kho", value: "inventory" },
       ],
       productList: [],
       itemPaging: [

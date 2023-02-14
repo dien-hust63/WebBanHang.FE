@@ -1,0 +1,29 @@
+.product-detail-inventory{
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+}
+
+.product-detail-inventory-icon{
+    cursor: pointer;
+}
+
+.product-detail-main-image{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-detail-attribute{
+    padding: 0 70px;
+}
+
+.product-detail-attribute-size, .product-detail-attribute-color{
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+
+.attribute-title{
+    width: 100px;
+}

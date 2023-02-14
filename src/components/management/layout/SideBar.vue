@@ -84,6 +84,15 @@
           </v-list-group>
         </v-list-item-group>
       </v-list>
+      <!-- <v-list-item class="px-2 pt-5 sidebar-branch">
+        <v-list-item-content>
+          <v-combobox
+            :items="listBranch"
+            variant="solo"
+          ></v-combobox>
+        </v-list-item-content>
+      </v-list-item> -->
+
     </v-navigation-drawer>
   </div>
 </template>
@@ -92,29 +101,26 @@ export default {
   data: () => ({
     selectedItem: 0,
     drawer: null,
+    listModule: [],
     items: [
       {
         icon: "mdi-finance",
         text: "Tổng quan",
-        route: "/report",
         name: "m-report",
       },
       {
         icon: "mdi-cart-variant",
         text: "Đơn hàng",
-        route: "/order",
         name: "m-order",
       },
       {
         icon: "mdi-account-group",
         text: "Khách hàng",
-        route: "/customer",
         name: "m-customer",
       },
       {
         icon: "mdi-home-circle-outline",
         text: "Khuyến mãi",
-        route: "/promotion",
         name: "m-promotion",
       },
     ],
@@ -128,8 +134,15 @@ export default {
       ["Nhân viên", "", "m-employee"],
       ["Vai trò", "", "m-role"],
     ],
+    listBranch: [],
   }),
+  created() {
+    this.getModulePermission();
+  },
   methods: {
+    getModulePermission() {
+      // Lấy danh sách các module và quyền đối với user hiện tại
+    },
     handleMenuClick(name) {
       this.$router
         .push({
@@ -143,5 +156,15 @@ export default {
 <style scoped>
 div >>> .v-list a {
   text-decoration: none;
+}
+
+.v-navigation-drawer__content {
+  position: relative;
+}
+
+.sidebar-branch {
+  position: absolute;
+  bottom: 0;
+  left: 10px;
 }
 </style>

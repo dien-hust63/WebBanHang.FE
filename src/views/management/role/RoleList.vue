@@ -60,7 +60,7 @@
         </v-col>
       </v-row>
     </div>
-    <base-popup
+    <!-- <base-popup
       :isShowPopup="isShowPopup"
       @closePopup="closeAddRolePopup"
       maxwidth="760px"
@@ -105,13 +105,12 @@
           </v-container>
         </v-form>
       </v-card-text>
-    </base-popup>
+    </base-popup> -->
   </div>
 </template>
 <script>
 import MHeader from "../../../components/management/header/MHeader.vue";
 import { FactoryService } from "../../../service/factory/factory.service";
-import BasePopup from "../../../components/common/BasePopup.vue";
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
 const RoleService = FactoryService.get("roleService");
@@ -119,7 +118,6 @@ export default {
   name: "RoleList",
   components: {
     MHeader,
-    BasePopup,
   },
   data() {
     return {
@@ -246,9 +244,11 @@ export default {
      * mở form thêm mới
      */
     openAddForm() {
-      this.titlePopup = "Thêm vai trò";
-      this.popupMode = FormMode.Add;
-      this.isShowPopup = true;
+      this.$router.push({
+        name: "m-role-detail",
+        params: { id: 0, formMode: 1 },
+        query: { mode: FormMode.Add },
+      });
     },
     /**
      * Lưu vai trò
@@ -286,7 +286,6 @@ export default {
     insertRole() {
       const me = this;
       RoleService.insertData(this.addRole).then((result) => {
-        debugger; // eslint-disable-line no-debugger
         if (result && result.data) {
           if (result.data.success) {
             me.$toast.success("Thêm mới vai trò thành công!");
@@ -341,9 +340,12 @@ export default {
      * xóa dữ liệu
      */
     deleteData() {
+      if (this.selected.findIndex((x) => x.rolecode == "R00001") > -1) {
+        this.$toast.error("Không được xóa quyền Quản trị hệ thống.");
+        return;
+      }
       const me = this;
       let listID = this.selected.map((x) => x.idrole).join(",");
-      debugger; // eslint-disable-line no-debugger
       RoleService.deleteMultiple({ ListID: listID }).then((result) => {
         if (result && result.data) {
           if (result.data.success) {

@@ -17,28 +17,6 @@
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
-      <!-- <v-btn
-        v-show="isViewMode"
-        color="success"
-        @click="activeAccount"
-        class="ml-4"
-      >
-        <v-icon left>
-          mdi-package-variant-closed-check
-        </v-icon>
-        Kích hoạt
-      </v-btn>
-      <v-btn
-        v-show="isViewMode"
-        color="error"
-        @click="deactiveAccount"
-        class="ml-4"
-      >
-        <v-icon left>
-          mdi-block-helper
-        </v-icon>
-        Ngừng kích hoạt
-      </v-btn> -->
       <v-btn
         v-show="isViewMode"
         color="#F4F5F9"
@@ -63,7 +41,8 @@
       </v-btn>
     </v-toolbar>
     <div class="bk-detail-content">
-      <v-card-text>
+      <div class="title mt-4">Thông tin chung</div>
+      <v-card-text class="pt-0">
         <v-form
           ref="form"
           v-model="validForm"
@@ -114,11 +93,47 @@
                     :disabled="isViewMode"
                   ></v-combobox>
                 </v-col>
+                <v-col
+                  cols="12"
+                  class="px-8"
+                >
+                  <v-text-field
+                    v-model="currentData.costprice"
+                    type="number"
+                    label="Giá vốn"
+                  />
+                </v-col>
+                <v-col
+                  cols="12"
+                  class="px-8"
+                >
+                  <v-text-field
+                    v-model="currentData.sellprice"
+                    type="number"
+                    label="Giá bán"
+                  />
+                </v-col>
+                <!-- <v-col
+                  cols="12"
+                  class="px-8 "
+                >
+                  <div class="product-detail-inventory">
+
+                    <v-text-field
+                      v-model="currentData.inventory"
+                      type="number"
+                      label="Tồn kho"
+                    />
+                    <div class="product-detail-inventory-icon">
+                      <v-icon @click="openProductInvetoryPopup">mdi mdi-assistant</v-icon>
+                    </div>
+                  </div>
+                </v-col> -->
               </v-col>
               <v-col
                 cols="12"
                 sm="6"
-                class="px-16"
+                class="px-16 product-detail-main-image"
               >
                 <image-upload ref="imageUpload" />
               </v-col>
@@ -126,7 +141,84 @@
           </v-container>
         </v-form>
       </v-card-text>
+      <div class="title">Thuộc tính</div>
+      <div class="product-detail-attribute">
+        <div class="product-detail-attribute-color">
+          <div class="attribute-title mr-4">Màu sắc:</div>
+          <div class="attribute-color-content">
+            <v-combobox
+              v-model="selectedColor"
+              :items="listColor"
+              return-object
+              :disabled="isViewMode"
+              width="300px"
+              multiple
+              chips
+              placeholder="Chọn màu sắc"
+              clearable
+            ></v-combobox>
+          </div>
+
+        </div>
+        <div class="product-detail-attribute-size">
+          <div class="attribute-title mr-4">Kích thước:</div>
+          <div class="attribute-size-content">
+            <v-combobox
+              v-model="selectedSize"
+              :items="listSize"
+              return-object
+              :disabled="isViewMode"
+              width="300px"
+              multiple
+              chips
+              placeholder="Chọn kích thước"
+              clearable
+            ></v-combobox>
+          </div>
+        </div>
+      </div>
     </div>
+    <!-- <base-popup
+      :isShowPopup="isOpenInventory"
+      @closePopup="closeInventoryPopup"
+      maxwidth="760px"
+      title="Thiết lập tồn kho các chi nhánh"
+      @saveData="saveInventory"
+    >
+      <v-card-text>
+        <v-form
+          ref="form"
+          v-model="validInventoryForm"
+          lazy-validation
+          class="inventory-form"
+        >
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  label="Mã vai trò (*)"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  label="Tên vai trò (*)"
+                  required
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  label="Mô tả vai trò"
+                  persistent-hint
+                  required
+                ></v-text-field>
+              </v-col>
+
+            </v-row>
+          </v-container>
+        </v-form>
+      </v-card-text>
+    </base-popup> -->
   </div>
 </template>
 
@@ -138,10 +230,12 @@ import { FactoryService } from "../../../service/factory/factory.service";
 const ProductService = FactoryService.get("productService");
 const BranchService = FactoryService.get("branchService");
 const ProductCategoryService = FactoryService.get("productcategoryService");
+// import BasePopup from "../../../components/common/BasePopup.vue";
 export default {
   name: "ProductDetail",
   components: {
     ImageUpload,
+    // BasePopup,
   },
   data() {
     return {
@@ -164,6 +258,25 @@ export default {
       listProductCategory: [],
       selectedProductCategory: null,
       accountStatus: AccountStatus.NotActive,
+      isOpenInventory: false,
+      validInventoryForm: false,
+      listSize: ["XL", "L", "M"],
+      listColor: [
+        "Đen",
+        "Trắng",
+        "Tím",
+        "Hồng",
+        "Đỏ",
+        "Vàng",
+        "Cam",
+        "Nâu",
+        "Xám",
+        "Be",
+        "Xanh lá cây",
+        "Xanh dương",
+      ],
+      selectedSize: [],
+      selectedColor: [],
     };
   },
   created() {
@@ -194,6 +307,13 @@ export default {
           console.log(e);
         });
     },
+    openProductInvetoryPopup() {
+      this.isOpenInventory = true;
+    },
+    closeInventoryPopup() {
+      this.isOpenInventory = false;
+    },
+    saveInventory() {},
     /**
      * Lấy danh sách toàn bộ nhóm hàng hoas
      */
@@ -355,5 +475,6 @@ export default {
 };
 </script>
 
-<style>
+<style scroped>
+@import url("../../../css/management/m-productdetail.css");
 </style>

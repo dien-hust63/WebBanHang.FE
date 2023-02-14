@@ -120,6 +120,44 @@
 
       <div class="bk-role-permission-module">
         <div class="title">Phân quyền phân hệ</div>
+        <div class="bk-role-permission-module-list">
+          <div
+            class="role-permission-module-item"
+            v-for="(item, index) in listModule"
+            :key="index"
+          >
+            <div class="role-permission-module-item-title">{{item.modulename}}</div>
+            <div class="role-permission-module-item-content">
+              <!-- <v-checkbox
+                class="ml-4"
+                :input-value="tickQuickSelected(item)"
+                @change="changeFullPermissionInModule($event, item)"
+                :disabled="isViewMode"
+                :key="index"
+              >
+              </v-checkbox> -->
+              <v-combobox
+                clearable
+                class="ml-2"
+                :items="item.permissiondefault"
+                multiple
+                placeholder="Chọn quyền"
+                :disabled="isViewMode"
+                return-object
+                item-text="permissionname"
+                item-value="permissionid"
+                v-model="item.permission"
+                :value="item.permission"
+                width="300px"
+                @change="updatePermission($event,item)"
+                :key="index"
+              >
+              </v-combobox>
+
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -133,6 +171,7 @@ import { FactoryService } from "../../../service/factory/factory.service";
 const EmployeeService = FactoryService.get("employeeService");
 const RoleService = FactoryService.get("roleService");
 const BranchService = FactoryService.get("branchService");
+const ModuleService = FactoryService.get("moduleService");
 export default {
   name: "RoleDetail",
   data() {
@@ -153,6 +192,18 @@ export default {
       listBranch: [],
       selectedBranch: null,
       accountStatus: AccountStatus.NotActive,
+      listModule: [],
+      valueTest: [
+        {
+          id: "View",
+          text: "Xem",
+        },
+      ],
+      listModulePermissionDefault: [],
+      permissionAll: {
+        permissionid: "All",
+        permissionname: "Toàn quyền",
+      },
     };
   },
   created() {
@@ -161,9 +212,85 @@ export default {
       this.formMode = parseInt(this.$route.query.mode) ?? FormMode.Vỉew;
     }
     this.getAllBranch();
-    this.getEmployeeInfo();
+    this.getDataDetail();
+    this.getModulePermissionDefault();
   },
   methods: {
+    updatePermission(chosen, item) {
+      if (
+        chosen &&
+        chosen.length > 0 &&
+        item.permission.findIndex((x) => x.permissionid == "All") > -1
+      ) {
+        item.permission = [this.permissionAll];
+      }
+    },
+    /**
+     * Lấy danh sách quyền module mặc định
+     */
+    getModulePermissionDefault() {
+      const me = this;
+      let permissionDefault = localStorage.getItem("permissiondefault");
+      if (permissionDefault) {
+        me.listModulePermissionDefault = JSON.parse(permissionDefault);
+        me.handleListModule();
+      } else {
+        ModuleService.getModulePermissionDefault()
+          .then((result) => {
+            if (result && result.data) {
+              me.listModulePermissionDefault = result.data.data;
+              me.listModulePermissionDefault.forEach((element) => {
+                element.permission = JSON.parse(element.permission);
+              });
+              localStorage.setItem(
+                "permissiondefault",
+                JSON.stringify(me.listModulePermissionDefault)
+              );
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
+    },
+
+    handleListModule() {
+      const me = this;
+      me.listModulePermissionDefault.forEach((element) => {
+        let index = me.listModule.findIndex(
+          (x) => x.idmodule == element.idmodule
+        );
+        if (index > -1) {
+          me.listModule[index]["permissiondefault"] = element["permission"];
+          me.listModule[index]["permission"] = [me.permissionAll];
+        } else {
+          me.listModule.push({
+            permissiondefault: element["permission"],
+            idmodule: element["idmodule"],
+            modulename: element["layoutname"],
+            permission: [me.permissionAll],
+          });
+        }
+      });
+    },
+    tickQuickSelected(item) {
+      if (
+        item.permission &&
+        item.permissiondefault &&
+        item.permission.length == item.permissiondefault.length
+      ) {
+        return true;
+      } else return false;
+    },
+    // changeFullPermissionInModule(isfullpermission, item) {
+    //   this.$nextTick(() => {
+    //     if (isfullpermission) {
+    //       item.permission = item.permissiondefault;
+    //     } else {
+    //       item.permission = [];
+    //     }
+    //   });
+    // },
     /**
      * Lấy danh sách toàn bộ nhân viên
      */
@@ -185,16 +312,25 @@ export default {
     /**
      * Lấy dữ liệu nhân viên nếu ở form view
      */
-    getEmployeeInfo() {
+    getDataDetail() {
       const me = this;
       if (me.formMode == FormMode.Add) {
         return;
       }
       let id = this.$route.params.id;
-      RoleService.getDataById(id)
+      RoleService.getRoleDetail(id)
         .then((result) => {
           if (result && result.data) {
-            me.currentData = result.data.data;
+            me.currentData = result.data.data.roleInfo;
+            me.listModule = result.data.data.listRoleModule.map((x) => {
+              return {
+                ...x,
+                permission: JSON.parse(x.permission),
+                permissiondefault: this.listModulePermissionDefault.find(
+                  (y) => y.idmodule == x.idmodule
+                ).permission,
+              };
+            });
             me.title = `Vai trò ${me.currentData.rolecode} - ${me.currentData.rolename}`;
           }
         })
@@ -204,10 +340,14 @@ export default {
     },
     backToList() {
       this.$router.push({
-        name: "m-employee",
+        name: "m-role",
       });
     },
     openFormEdit() {
+      if (this.currentData && this.currentData.rolecode == "R00001") {
+        this.$toast.error("Quyền quản trị hệ thống là mặc định toàn quyền.");
+        return;
+      }
       this.$router
         .push({
           query: { mode: FormMode.Edit },
@@ -227,28 +367,39 @@ export default {
       }
       switch (me.formMode) {
         case FormMode.Add:
-          this.insertEmployee();
+          this.insertData();
           break;
         case FormMode.Edit:
-          this.updateEmployee();
+          this.updateData();
           break;
         default:
           break;
       }
     },
     /**
-     * thêm mới nhân viên
+     * thêm mới vai trò
      */
-    insertEmployee() {
-      this.currentData.statusid = AccountStatus.NotActive;
-      this.currentData.statustext = "Chưa kích hoạt";
+    insertData() {
+      let param = {
+        RoleInfo: this.currentData,
+        ListRoleModule: this.listModule.map((x) => {
+          return {
+            idrole: x.idrole,
+            idmodule: x.idmodule,
+            permission: x.permission,
+          };
+        }),
+      };
       const me = this;
-      EmployeeService.insertData(this.currentData).then((result) => {
+      RoleService.insertRoleCustom(param).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Thêm mới nhân viên thành công!");
+            me.$toast.success("Thêm mới vai trò thành công!");
             me.formMode = FormMode.View;
-            me.getEmployeeInfo(result.data.data.idemployee);
+            this.$router.push({
+              name: "m-role-detail",
+              params: { id: result.data.data["idrole"], formMode: 3 },
+            });
           } else {
             me.$toast.error(result.data.errorMessage);
           }
@@ -258,17 +409,28 @@ export default {
     /**
      * sửa chi nhánh
      */
-    updateEmployee() {
+    updateData() {
       const me = this;
-      EmployeeService.updateData(
-        this.currentData,
-        this.currentData?.idemployee
-      ).then((result) => {
+      let param = {
+        RoleInfo: this.currentData,
+        ListRoleModule: this.listModule.map((x) => {
+          return {
+            idrole: x.idrole,
+            idmodule: x.idmodule,
+            permission: x.permission,
+            idrolemodule: x.idrolemodule,
+          };
+        }),
+      };
+      RoleService.updateRoleCustom(param).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
             me.$toast.success("Sửa chi nhánh thành công!");
             me.formMode = FormMode.View;
-            me.getEmployeeInfo(result.data.data.idemployee);
+            this.$router.push({
+              name: "m-role-detail",
+              params: { id: result.data.data["idrole"], formMode: 3 },
+            });
           } else {
             me.$toast.error(result.data.errorMessage);
           }
@@ -297,7 +459,7 @@ export default {
           if (result.data.success) {
             me.$toast.success("Kích hoạt tài khoản thành công!");
             me.formMode = FormMode.View;
-            me.getEmployeeInfo(me.currentData.idemployee);
+            me.getDataDetail(me.currentData.idemployee);
           } else {
             me.$toast.error(result.data.errorMessage);
           }
@@ -312,7 +474,7 @@ export default {
           if (result.data.success) {
             me.$toast.success("Ngừng kích hoạt tài khoản thành công!");
             me.formMode = FormMode.View;
-            me.getEmployeeInfo(me.currentData.idemployee);
+            me.getDataDetail(me.currentData.idemployee);
           } else {
             me.$toast.error(result.data.errorMessage);
           }
@@ -336,8 +498,10 @@ export default {
       deep: true,
     },
   },
+  computed: {},
 };
 </script>
 
-<style>
+<style scoped>
+@import url("../../../css/management/m-role-detail.css");
 </style>

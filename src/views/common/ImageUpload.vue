@@ -1,26 +1,19 @@
 <template>
   <div class="bk-image-upload">
-    <v-card outlined>
-      <v-card-text
-        class="text-center"
-        height="100%"
-      >
-        <input
-          style="display:none"
-          type="file"
-          @change="onFileSelected"
-          ref="imageUpload"
-          accept="image/*"
-        >
-        <img
-          class="bk-image-upload-icon"
-          alt="Ảnh hàng hóa"
-          :style="{ height: height,'min-width': minwidth, 'max-width':maxwidth}"
-          :src="newImage || emptyImage"
-          @click="$refs.imageUpload.click()"
-        />
-      </v-card-text>
-    </v-card>
+    <input
+      style="display:none"
+      type="file"
+      @change="onFileSelected"
+      ref="imageUpload"
+      accept="image/*"
+    >
+    <img
+      class="bk-image-upload-icon"
+      alt="Ảnh hàng hóa"
+      :style="{ height: height,'min-width': minwidth, 'max-width':maxwidth}"
+      :src="newImage || emptyImage"
+      @click="$refs.imageUpload.click()"
+    />
   </div>
 </template>
 <script>
@@ -52,7 +45,12 @@ export default {
   },
 };
 </script>
-    <style lang="sass" scoped>
+<style  scoped>
+.bk-image-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
     
     

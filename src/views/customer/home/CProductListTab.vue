@@ -2,6 +2,7 @@
   <div class="bkc-productlisttab">
     <div
       class="product-category-item"
+      @click="chooseProductCategory(item)"
       v-for="(item, index) in productcategoryList"
       :key="index"
     >
@@ -28,7 +29,11 @@ export default {
     productcategoryList: Array,
   },
 
-  methods: {},
+  methods: {
+    chooseProductCategory(item) {
+      console.log(item);
+    },
+  },
 };
 </script>
   <style  scoped>

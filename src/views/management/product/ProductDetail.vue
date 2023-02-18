@@ -101,6 +101,7 @@
                     v-model="currentData.costprice"
                     type="number"
                     label="Giá vốn"
+                    :disabled="isViewMode"
                   />
                 </v-col>
                 <v-col
@@ -111,24 +112,36 @@
                     v-model="currentData.sellprice"
                     type="number"
                     label="Giá bán"
+                    :disabled="isViewMode"
                   />
                 </v-col>
-                <!-- <v-col
+                <v-col
+                  cols="12"
+                  class="px-8"
+                >
+                  <v-textarea
+                    label="Mô tả"
+                    v-model="currentData.description"
+                    rows="1"
+                    auto-grow
+                    :disabled="isViewMode"
+                  ></v-textarea>
+                </v-col>
+                <v-col
                   cols="12"
                   class="px-8 "
                 >
                   <div class="product-detail-inventory">
 
                     <v-text-field
-                      v-model="currentData.inventory"
+                      v-model="totalInventory"
                       type="number"
+                      disabled
                       label="Tồn kho"
                     />
-                    <div class="product-detail-inventory-icon">
-                      <v-icon @click="openProductInvetoryPopup">mdi mdi-assistant</v-icon>
-                    </div>
                   </div>
-                </v-col> -->
+                </v-col>
+
               </v-col>
               <v-col
                 cols="12"
@@ -136,10 +149,14 @@
                 class="px-16 product-detail-main-image"
               >
                 <image-upload
-                  ref="imageUpload"
+                  ref="mainImage"
                   width="300px"
+                  :imageVal="mainImageLink"
+                  @onFileSelected="changeMainImage"
                 />
+
               </v-col>
+
             </v-row>
           </v-container>
         </v-form>
@@ -182,7 +199,6 @@
                         :disabled="isViewMode"
                         width="300px"
                         placeholder="Chọn màu sắc"
-                        chips
                         clearable
                       ></v-combobox>
                     </td>
@@ -190,8 +206,10 @@
                       <div class="bkc-table-cart-product-name pl-8">
                         <div class="table-cart-img">
                           <image-upload
-                            ref="imageUpload"
                             width="100px"
+                            :imageVal="item.image"
+                            @onFileSelected="changeColorImage(...arguments, item)"
+                            :key="index"
                           />
                         </div>
                       </div>
@@ -207,7 +225,10 @@
                     </td>
                   </tr>
                 </table>
-                <v-btn @click="insertColorAttribute()">Thêm dòng</v-btn>
+                <v-btn
+                  @click="insertColorAttribute()"
+                  :disabled="isViewMode"
+                >Thêm dòng</v-btn>
               </div>
             </div>
             <div class="product-detail-attribute-size">
@@ -263,6 +284,7 @@
                     variant="underlined"
                     v-model="item.costprice"
                     type="number"
+                    :disabled="isViewMode"
                   ></v-text-field>
                 </td>
                 <td class="bkc-table-cart-cell">
@@ -270,6 +292,7 @@
                     variant="underlined"
                     v-model="item.sellprice"
                     type="number"
+                    :disabled="isViewMode"
                   ></v-text-field>
                 </td>
                 <td class="bkc-table-cart-cell">
@@ -277,6 +300,7 @@
                     variant="underlined"
                     v-model="item.inventory"
                     type="number"
+                    :disabled="isViewMode"
                   ></v-text-field>
                 </td>
                 <td>
@@ -303,6 +327,7 @@ import FormMode from "../../../enum/FormModeEnum";
 import AccountStatus from "../../../enum/AccountStatusEnum";
 import ImageUpload from "../../common/ImageUpload.vue";
 import { FactoryService } from "../../../service/factory/factory.service";
+import { AZURE_STORAGE_BASE_URL } from "../../../config/config.dev.json";
 const ProductService = FactoryService.get("productService");
 const BranchService = FactoryService.get("branchService");
 const ProductCategoryService = FactoryService.get("productcategoryService");
@@ -313,6 +338,8 @@ export default {
   },
   data() {
     return {
+      testImg: "",
+      listImageInColor: [],
       listProductDetail: [],
       listColorSelected: [],
       isShowGroupInstance: false,
@@ -332,7 +359,7 @@ export default {
       },
       listBranch: [],
       selectedBranch: null,
-
+      mainImageLink: "",
       listProductCategory: [],
       selectedProductCategory: null,
       accountStatus: AccountStatus.NotActive,
@@ -355,6 +382,7 @@ export default {
       ],
       listSizeSelected: [],
       selectedColor: "",
+      listFiles: [],
     };
   },
   created() {
@@ -435,11 +463,25 @@ export default {
         return;
       }
       let id = this.$route.params.id;
-      ProductService.getDataById(id)
+      ProductService.getProductDetail(id)
         .then((result) => {
           if (result && result.data) {
-            me.currentData = result.data.data;
+            me.currentData = result.data.data.product;
+            me.selectedProductCategory = {
+              value: me.currentData["categoryid"],
+              text: me.currentData["categoryname"],
+            };
+            me.mainImageLink = me.currentData["image"];
+            me.listColorSelected = JSON.parse(me.currentData.color);
+            me.listSizeSelected = JSON.parse(me.currentData.size);
             me.title = `${me.currentData.productcode} - ${me.currentData.productname}`;
+            me.listProductDetail = [...result.data.data.productDetail];
+            if (me.listProductDetail && me.listProductDetail.length > 0) {
+              me.isShowGroupInstance = true;
+            }
+            if (me.listSizeSelected || me.listColorSelected.length > 0) {
+              me.isShowGroupAttribute = true;
+            }
           }
         })
         .catch((e) => {
@@ -469,6 +511,7 @@ export default {
       if (!isValid) {
         return;
       }
+      this.prepareDataBeforeSave();
       switch (me.formMode) {
         case FormMode.Add:
           this.insertData();
@@ -481,23 +524,88 @@ export default {
       }
     },
     /**
+     * Làm chuẩn dữ liệu trước khi lưu
+     */
+    prepareDataBeforeSave() {
+      let listFieldToInt = ["costprice", "sellprice", "inventory"];
+      listFieldToInt.forEach((element) => {
+        if (this.currentData[element] && this.currentData[element] != "") {
+          this.currentData[element] = parseInt(this.currentData[element]);
+        }
+        this.listProductDetail.forEach((detail) => {
+          if (detail[element] && detail[element] != "") {
+            detail[element] = parseInt(detail[element]);
+          }
+        });
+      });
+      let listColorSelectedClone = [...this.listColorSelected];
+      if (this.listImageInColor.length > 0) {
+        listColorSelectedClone.forEach((element) => {
+          element["image"] = this.listImageInColor.find(
+            (x) => x.color == element.color
+          )?.image;
+        });
+      }
+      this.currentData["color"] = JSON.stringify(listColorSelectedClone);
+      this.currentData["size"] = JSON.stringify(this.listSizeSelected);
+    },
+    /**
+     * thay đổi image chính
+     */
+    changeMainImage(file) {
+      if (file) {
+        let fileClone = this.renameFile(file, `${Date.now()}`);
+        this.currentData[
+          "image"
+        ] = `${AZURE_STORAGE_BASE_URL}${fileClone.name}`;
+        this.listFiles.push(fileClone);
+      }
+    },
+    renameFile(originalFile, newName) {
+      return new File([originalFile], newName, {
+        type: originalFile.type,
+        lastModified: originalFile.lastModified,
+      });
+    },
+    /**
+     * thay đổi image list color
+     */
+    changeColorImage(file, item) {
+      if (file) {
+        let fileClone = this.renameFile(file, `${Date.now()}`);
+        this.listImageInColor.push({
+          color: item.color,
+          image: `${AZURE_STORAGE_BASE_URL}${fileClone.name}`,
+        });
+
+        this.listFiles.push(fileClone);
+      }
+    },
+    /**
      * thêm mới hàng hóa
      */
     insertData() {
-      let a = this.$refs.imageUpload;
-      let imageProduct = new FormData();
-      imageProduct.append("mainImage", a.newImageRaw, a.newImageRaw.name);
-      imageProduct.append("productcode", this.currentData.productcode);
-      imageProduct.append("productname", this.currentData.productname);
-      imageProduct.append("categoryid", this.currentData.categoryid);
-      imageProduct.append("categoryname", this.currentData.categoryname);
+      let productParam = new FormData();
+      productParam.append("product", JSON.stringify(this.currentData));
+      productParam.append(
+        "productdetail",
+        JSON.stringify(this.listProductDetail)
+      );
+      for (let i = 0; i < this.listFiles.length; i++) {
+        productParam.append("file", this.listFiles[i], this.listFiles[i].name);
+      }
       const me = this;
-      ProductService.insertProduct(imageProduct).then((result) => {
+      ProductService.insertProductDetail(productParam).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
             me.$toast.success("Thêm mới hàng hóa thành công!");
-            me.$refs.imageUpload = result.data.data.me.formMode = FormMode.View;
-            me.getDetailInfo(result.data.data.idproduct);
+            me.formMode = FormMode.View;
+            me.listSizeSelected = JSON.parse(result.data.data.size);
+            me.listColorSelected = JSON.parse(result.data.data.color);
+            this.$router.push({
+              name: "m-product-detail",
+              params: { id: result.data.data["idproduct"], formMode: 3 },
+            });
           } else {
             me.$toast.error(result.data.errorMessage);
           }
@@ -508,16 +616,27 @@ export default {
      * sửa hàng hóa
      */
     updateData() {
+      let productParam = new FormData();
+      productParam.append("product", JSON.stringify(this.currentData));
+      productParam.append(
+        "productdetail",
+        JSON.stringify(this.listProductDetail)
+      );
+      for (let i = 0; i < this.listFiles.length; i++) {
+        productParam.append("file", this.listFiles[i], this.listFiles[i].name);
+      }
       const me = this;
-      ProductService.updateData(
-        this.currentData,
-        this.currentData?.idproduct
-      ).then((result) => {
+      ProductService.updateProductDetail(productParam).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
             me.$toast.success("Sửa hàng hóa thành công!");
             me.formMode = FormMode.View;
-            me.getDetailInfo(result.data.data.idproduct);
+            me.listSizeSelected = JSON.parse(result.data.data.size);
+            me.listColorSelected = JSON.parse(result.data.data.color);
+            this.$router.push({
+              name: "m-product-detail",
+              params: { id: result.data.data["idproduct"], formMode: 3 },
+            });
           } else {
             me.$toast.error(result.data.errorMessage);
           }
@@ -564,23 +683,112 @@ export default {
       deep: true,
     },
     listColorSelected: {
-      handler: function (oldval, val) {
-        if (val && val.length > 0) {
+      handler: function (val) {
+        if (
+          val &&
+          val.length > 0 &&
+          (this.formMode == FormMode.Add || this.formMode == FormMode.Edit)
+        ) {
           const me = this;
           me.isShowGroupInstance = true;
           let countP = 0;
           me.listProductDetail = [];
           val.forEach((element) => {
             if (element["color"] != "") {
-              if (me.listSizeSelected && me.listSizeSelected > 0) {
+              if (me.listSizeSelected && me.listSizeSelected.length > 0) {
                 me.listSizeSelected.forEach((size) => {
                   countP++;
                   me.listProductDetail.push({
-                    productname: `${me.currentData["productname"]} - ${element["color"]} - ${size["size"]}`,
+                    productname: `${me.currentData["productname"]} - ${element["color"]} - ${size}`,
                     productcode: `${me.currentData["productcode"]}-${countP}`,
                     costprice: `${me.currentData["costprice"]}`,
                     sellprice: `${me.currentData["sellprice"]}`,
-                    inventory: `${me.currentData["inventory"]}`,
+                    size: size,
+                    color: element["color"],
+                  });
+                });
+              } else {
+                countP++;
+                me.listProductDetail.push({
+                  productname: `${me.currentData["productname"]} - ${element["color"]}`,
+                  productcode: `${me.currentData["productcode"]}-${countP}`,
+                  costprice: `${me.currentData["costprice"]}`,
+                  sellprice: `${me.currentData["sellprice"]}`,
+                  color: element["color"],
+                });
+              }
+            }
+          });
+        }
+      },
+      deep: true,
+    },
+    currentData: {
+      handler: function (val) {
+        if (
+          val &&
+          (this.formMode == FormMode.Add || this.formMode == FormMode.Edit)
+        ) {
+          const me = this;
+          me.isShowGroupInstance = true;
+          let countP = 0;
+          me.listProductDetail = [];
+          if (me.listColorSelected && me.listColorSelected.length > 0) {
+            me.listColorSelected.forEach((element) => {
+              if (element["color"] != "") {
+                if (me.listSizeSelected && me.listSizeSelected.length > 0) {
+                  me.listSizeSelected.forEach((size) => {
+                    countP++;
+                    me.listProductDetail.push({
+                      productname: `${val["productname"]} - ${element["color"]} - ${size}`,
+                      productcode: `${val["productcode"]}-${countP}`,
+                      costprice: `${val["costprice"]}`,
+                      sellprice: `${val["sellprice"]}`,
+                      size: size,
+                      color: element["color"],
+                    });
+                  });
+                } else {
+                  me.listProductDetail = [];
+                  countP++;
+                  me.listProductDetail.push({
+                    productname: `${val["productname"]} - ${element["color"]}`,
+                    productcode: `${val["productcode"]}-${countP}`,
+                    costprice: `${val["costprice"]}`,
+                    sellprice: `${val["sellprice"]}`,
+                    color: element["color"],
+                  });
+                }
+              }
+            });
+          }
+        }
+      },
+      deep: true,
+    },
+    listSizeSelected: {
+      handler: function (val) {
+        if (
+          val &&
+          val.length > 0 &&
+          (this.formMode == FormMode.Add || this.formMode == FormMode.Edit)
+        ) {
+          const me = this;
+          me.isShowGroupInstance = true;
+          let countP = 0;
+          me.listProductDetail = [];
+          me.listColorSelected.forEach((element) => {
+            if (element["color"] != "") {
+              if (val && val.length > 0) {
+                val.forEach((size) => {
+                  countP++;
+                  me.listProductDetail.push({
+                    productname: `${me.currentData["productname"]} - ${element["color"]} - ${size}`,
+                    productcode: `${me.currentData["productcode"]}-${countP}`,
+                    costprice: `${me.currentData["costprice"]}`,
+                    sellprice: `${me.currentData["sellprice"]}`,
+                    size: size,
+                    color: element["color"],
                   });
                 });
               } else {
@@ -591,7 +799,7 @@ export default {
                   productcode: `${me.currentData["productcode"]}-${countP}`,
                   costprice: `${me.currentData["costprice"]}`,
                   sellprice: `${me.currentData["sellprice"]}`,
-                  inventory: `${me.currentData["inventory"]}`,
+                  color: element["color"],
                 });
               }
             }
@@ -599,6 +807,21 @@ export default {
         }
       },
       deep: true,
+    },
+    totalInventory(val) {
+      this.currentData["inventory"] = val;
+    },
+  },
+  computed: {
+    totalInventory() {
+      let total = 0;
+      this.listProductDetail.forEach((x) => {
+        if (x && x["inventory"] && x["inventory"] != "") {
+          total += parseInt(x["inventory"]);
+        }
+      });
+
+      return total;
     },
   },
 };

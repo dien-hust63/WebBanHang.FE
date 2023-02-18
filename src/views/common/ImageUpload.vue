@@ -11,7 +11,7 @@
       class="bk-image-upload-icon"
       alt="Ảnh hàng hóa"
       :style="{ 'width': width}"
-      :src="newImage || emptyImage"
+      :src="imageShow"
       @click="$refs.imageUpload.click()"
     />
   </div>
@@ -32,6 +32,7 @@ export default {
     width: String,
     minwidth: String,
     maxwidth: String,
+    imageVal: String,
   },
   created() {},
   methods: {
@@ -43,6 +44,18 @@ export default {
         this.newImage = await theReader.result;
       };
       theReader.readAsDataURL(file);
+      this.$emit("onFileSelected", file);
+    },
+  },
+  computed: {
+    imageShow() {
+      if (this.newImage && this.newImage != "") {
+        return this.newImage;
+      }
+      if (this.imageVal && this.imageVal != "") {
+        return this.imageVal;
+      }
+      return emptyImage;
     },
   },
 };

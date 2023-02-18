@@ -2,7 +2,6 @@
   <div class="bkc-productlisttab">
     <div
       class="product-category-item"
-      @click="chooseProductCategory(item)"
       v-for="(item, index) in productcategoryList"
       :key="index"
     >
@@ -10,6 +9,7 @@
       <div class="sub-category">
         <div
           class="sub-category-item"
+          @click="chooseProductCategory(child)"
           v-for="(child, i) in item.child"
           :key="i"
         >
@@ -31,7 +31,14 @@ export default {
 
   methods: {
     chooseProductCategory(item) {
-      console.log(item);
+      this.$router.push({
+        name: "c-productcategory",
+        params: {
+          id: item["idproductcategory"],
+          categoryname: item["categoryname"],
+        },
+      });
+      this.$emit("closeProductListTab");
     },
   },
 };

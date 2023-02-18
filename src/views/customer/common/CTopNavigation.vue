@@ -2,7 +2,10 @@
   <div class="bkc-top-navigation">
     <div class="c-nav-header">
       <div class="c-nav-header-left">
-        <v-img src="https://nvdien.blob.core.windows.net/images/360formen.png"></v-img>
+        <v-img
+          src="https://nvdien.blob.core.windows.net/images/360formen.png"
+          @click="returnHomePage"
+        ></v-img>
       </div>
       <div class="c-nav-header-center">
         <!-- search input -->
@@ -19,76 +22,7 @@
       </div>
       <div class="c-nav-header-right">
         <div class="ml-4 c-nav-header-right-icon c-nav-header-right-icon-cart">
-          <v-icon
-            large
-            @click="showCartMini()"
-          >
-            mdi mdi-cart-minus
-          </v-icon>
-          <div
-            class="c-nav-cart-minus-count"
-            @click="showCartMini()"
-          >
-            {{ $store.state.cart.totalCartItem }}
-          </div>
-          <div
-            class="c-nav-cart-mini-content"
-            v-show="isShowCartMini"
-          >
-            <div class="cart-mini-content-header">
-              <div class="title">Giỏ hàng</div>
-              <div
-                class="close"
-                @click="isShowCartMini = false"
-              >
-                <v-icon size="30px">mdi-close</v-icon>
-              </div>
-            </div>
-            <div class="cart-mini-content-body ">
-              <div
-                class="cart-mini-body-item"
-                v-for="i in 4"
-                :key="i"
-              >
-                <div class="cart-mini-item-image">
-                  <v-img src="https://nvdien.blob.core.windows.net/images/test.jpg"></v-img>
-                </div>
-                <div class="cart-mini-item-content pl-3">
-                  <div class="mini-item-name">
-                    <div class="mini-item-product-name">Quần jeans nam Rayon phom slim siêu mềm</div>
-                    <div class="delete-icon">
-                      <v-icon size="24px">mdi-delete</v-icon>
-                    </div>
-                  </div>
-                  <div class="mini-item-price"><b class="red--text">529000đ</b></div>
-                  <div class="mini-item-color-size">Màu sắc: Trắng, Size: 30</div>
-                  <div class="quantity-total">
-                    <ButtonQuantity />
-                    <div class="item-total">
-                      <div>
-                        Tổng cộng: <b class="red--text">529000đ</b>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="cart-mini-content-footer">
-              <div class="footer-total mt-2">Tổng cộng: <b class="red--text">529000đ</b></div>
-              <div class="btn-view-cart">
-                <v-btn
-                  tile
-                  color="#fbac14"
-                  width="100%"
-                  height="100%"
-                  class="white--text"
-                  @click="viewCartDetail"
-                >
-                  Xem giỏ hàng
-                </v-btn>
-              </div>
-            </div>
-          </div>
+          <c-cart-mini />
         </div>
         <div class="ml-4 c-nav-header-right-icon mr-2">
           <v-icon large>
@@ -120,7 +54,10 @@
           class="c-nav-product-category"
           v-show="isShowProductTab"
         >
-          <CProductListTab :productcategoryList="productcategoryList" />
+          <CProductListTab
+            :productcategoryList="productcategoryList"
+            @closeProductListTab="isShowProductTab=false"
+          />
         </div>
       </v-expand-transition>
     </div>
@@ -129,13 +66,13 @@
       <script>
 import CProductListTab from "../home/CProductListTab.vue";
 import { FactoryService } from "../../../service/factory/factory.service";
-import ButtonQuantity from "../../common/ButtonQuantity.vue";
+import CCartMini from "../cart/CCartMini.vue";
 const ProductCategoryService = FactoryService.get("productcategoryService");
 export default {
   name: "CTopNavigation",
   components: {
     CProductListTab,
-    ButtonQuantity,
+    CCartMini,
   },
   created() {
     this.getCategoryList();
@@ -146,20 +83,23 @@ export default {
       searchValue: "",
       isShowProductTab: false,
       productcategoryList: [],
-      isShowCartMini: false,
     };
   },
   methods: {
-    onSearch() {},
+    onSearch() {
+      this.$router.push({
+        name: "c-productsearch",
+        query: { text: this.searchValue },
+      });
+      //this.$eventBus.$emit("searchProduct", this.searchValue);
+    },
     handleFocusOut() {
       this.isShowProductTab = false;
     },
     showListBranch() {
       this.isShowProductTab = false;
     },
-    showCartMini() {
-      this.isShowCartMini = !this.isShowCartMini;
-    },
+
     getCategoryList() {
       const me = this;
       ProductCategoryService.getAllData()
@@ -183,10 +123,10 @@ export default {
           console.log(e);
         });
     },
-    viewCartDetail() {
-      this.isShowCartMini = false;
+
+    returnHomePage() {
       this.$router.push({
-        name: "c-cart",
+        name: "c-main-home",
       });
     },
   },

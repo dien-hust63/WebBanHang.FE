@@ -36,6 +36,11 @@ class ProductService extends BaseService{
     return axios
       .get(`${this.apiURL}/${this.controller}/getProductDetail/${id}`);
   }
+
+  getListProductByCategory(param){
+    return axios
+      .post(`${this.apiURL}/${this.controller}/getListProductByCategory`, param);
+  }
 }
 
 

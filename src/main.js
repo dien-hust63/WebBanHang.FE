@@ -8,6 +8,9 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import VueToast from 'vue-toast-notification';
 
+const EventBus = new Vue();
+Vue.prototype.$eventBus = EventBus;
+
 import 'vue-toast-notification/dist/theme-sugar.css';
 Vue.config.productionTip = false
 

@@ -98,9 +98,10 @@
     width: 300px;
     cursor: pointer;
 }
-.product-description-content{
+.product-description-content pre{
     max-height: 300px;
     overflow: auto;
+    font: 16px Roboto !important;
 }
 
 .product-description{

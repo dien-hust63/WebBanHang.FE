@@ -14,7 +14,7 @@ const routerCustomer = [
                   import(/*webpackChunkName "mainhome" */ '../../views/customer/home/CMainHome.vue')
           },
           {
-            path: 'product',
+            path: 'product/:id',
             name: "c-product-detail",
             component: () =>
                 import(/*webpackChunkName "productdetail" */ '../../views/customer/product/CProductDetail.vue')
@@ -24,6 +24,16 @@ const routerCustomer = [
             name: "c-cart",
             component: () =>
                 import(/*webpackChunkName "cart" */ '../../views/customer/cart/CCart.vue')
+          },
+          {
+            path: '/productcategory/:id',
+            name: 'c-productcategory',
+            component: () => import(/* webpackChunkName: "cproductcategory" */ '../../views/customer/productcategory/CProductCategory.vue'),
+          },
+          {
+            path: '/product/search',
+            name: 'c-productsearch',
+            component: () => import(/* webpackChunkName: "cproductsearch" */ '../../views/customer/product/CProductSearch.vue'),
           },
         ]
       },
@@ -35,5 +45,6 @@ const routerCustomer = [
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "checkout" */ '../../views/customer/checkout/Checkout.vue'),
       },
+      
 ]
 export default routerCustomer;

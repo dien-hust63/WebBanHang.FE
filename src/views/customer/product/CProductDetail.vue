@@ -2,11 +2,11 @@
   <div class="bkc-product-detail">
     <div class="product-detail-content">
       <div class="product-detail-left">
-        <v-img src="https://nvdien.blob.core.windows.net/images/test.jpg"></v-img>
+        <v-img :src="mainImage"></v-img>
       </div>
       <div class="product-detail-right">
         <div class="product-name">{{product.productname}}</div>
-        <div class="product-price">{{product.sellprice}}</div>
+        <div class="product-price">{{product.sellprice}} (VNĐ)</div>
         <div class="product-color">
           <div class="product-color-text"><b>Màu sắc:</b> {{currentColorPick.color}}</div>
           <div class="product-color-image">
@@ -29,14 +29,17 @@
               v-for="(item,index) in productSizeList"
               :key="index"
               @click="pickSize(item)"
-              :class="{'product-size-list-item--active':item.size == currentSizePick.size}"
+              :class="{'product-size-list-item--active':item == currentSizePick}"
             >
-              {{ item.size }}
+              {{ item }}
             </div>
           </div>
         </div>
         <div class="product-quantity">
-          <ButtonQuantity />
+          <ButtonQuantity
+            :quantityVal="quantityChosen"
+            @changeQuantity="changeQuantity"
+          />
 
         </div>
         <div class="btn-add-card">
@@ -57,8 +60,7 @@
         <div class="product-description">
           <div class="product-description-title"><b>Mô tả</b></div>
           <div class="product-description-content">
-            <p v-html="product.description"></p>
-
+            <pre v-html="product.description"></pre>
           </div>
         </div>
       </div>
@@ -94,9 +96,11 @@
   </div>
 </template>
 
-            <script>
+<script>
 import ButtonQuantity from "../../common/ButtonQuantity.vue";
 import CProductCard from "../productcard/ProductCard.vue";
+import { FactoryService } from "../../../service/factory/factory.service";
+const ProductService = FactoryService.get("productService");
 export default {
   name: "CProductDetail",
   components: {
@@ -105,24 +109,10 @@ export default {
   },
   data() {
     return {
-      product: {
-        mainimage: "https://nvdien.blob.core.windows.net/images/test.jpg",
-        productname: "Áo khoác nam AKHTK305",
-        sellprice: "949.000",
-        description:
-          "– Chất liệu: Da lộn (100% Poly) – Dáng: REGULAR<br />– Màu: BE, ĐEN<br />– Size: M – L – XL<br />– Sản phẩm đã có mặt ở toàn bộ các cửa hàng trên hệ thống Sản phẩm đã có mặt ở toàn bộ các cửa hàng trên hệ thống<br />",
-      },
-      productColorList: [
-        {
-          image: "https://nvdien.blob.core.windows.net/images/test.jpg",
-          color: "Trắng",
-        },
-        {
-          image:
-            "https://nvdien.blob.core.windows.net/images/ADLTK304-QJDTK324-2.jpg",
-          color: "Đen",
-        },
-      ],
+      quantityChosen: 1,
+      mainImage: "",
+      product: {},
+      productColorList: [],
       currentColorPick: {},
       productSizeList: [
         {
@@ -138,14 +128,44 @@ export default {
           size: "L",
         },
       ],
-      currentSizePick: {},
+      currentSizePick: "",
+      listProductDetail: [],
+      chosenproduct: {},
     };
   },
   created() {
-    this.currentColorPick = this.productColorList[0];
-    this.currentSizePick = this.productSizeList[0];
+    this.getProductDetail();
   },
   methods: {
+    changeQuantity(quantity) {
+      if (quantity && quantity != "") {
+        this.quantityChosen = parseInt(quantity);
+        this.chosenproduct["quantity"] = quantity;
+      }
+    },
+    getProductDetail() {
+      const me = this;
+      let id = this.$route.params.id;
+      ProductService.getProductDetail(id).then((result) => {
+        if (result && result.data) {
+          me.product = result.data.data.product;
+          me.chosenproduct = { ...me.product };
+          me.chosenproduct["quantity"] = 1;
+          me.mainImage = me.product["image"];
+          me.productColorList = JSON.parse(me.product["color"]);
+          me.productSizeList = JSON.parse(me.product["size"]);
+          me.listProductDetail = result.data.data.productDetail;
+          if (me.productColorList && me.productColorList.length > 0) {
+            me.currentColorPick = me.productColorList[0];
+            me.chosenproduct["color"] = me.currentColorPick.color;
+          }
+          if (me.productSizeList && me.productSizeList.length > 0) {
+            me.currentSizePick = me.productSizeList[0];
+            me.chosenproduct["size"] = me.currentSizePick;
+          }
+        }
+      });
+    },
     viewDetailProduct() {
       this.$router.push({
         name: "c-product-detail",
@@ -153,12 +173,16 @@ export default {
     },
     pickColor(item) {
       this.currentColorPick = item;
+      this.mainImage = item.image;
+      this.chosenproduct["image"] = item.image;
+      this.chosenproduct["color"] = item.color;
     },
     pickSize(item) {
       this.currentSizePick = item;
+      this.chosenproduct["size"] = item;
     },
     addProductToCart() {
-      this.$store.commit("cart/addProductToCart", {});
+      this.$store.commit("cart/addProductToCart", this.chosenproduct);
     },
   },
 };

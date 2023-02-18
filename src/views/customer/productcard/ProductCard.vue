@@ -4,7 +4,7 @@
     :style="{'height':height}"
   >
     <div class="bkc-product-card-image">
-      <v-img :src="product.mainimage"></v-img>
+      <v-img :src="product.image"></v-img>
     </div>
     <div class="bkc-product-card-title">
       <div class="product-card-name">{{ product.productname }}</div>

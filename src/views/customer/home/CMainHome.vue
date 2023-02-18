@@ -59,7 +59,7 @@ export default {
         },
       ],
       product: {
-        mainimage: "https://nvdien.blob.core.windows.net/images/test.jpg",
+        image: "https://nvdien.blob.core.windows.net/images/test.jpg",
         productname: "Áo khoác nam AKHTK305",
         sellprice: "949.000",
       },

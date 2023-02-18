@@ -8,7 +8,8 @@
     </div>
     <div class="quantity-value button-square-quantity">
       <input
-        v-model="number"
+        :value="quantityVal"
+        @input="handleInput"
         @keypress="isNumber($event)"
         maxlength="3"
       >
@@ -24,6 +25,9 @@
   <script>
 export default {
   name: "ButtonQuantity",
+  props: {
+    quantityVal: Number,
+  },
   data() {
     return {
       number: 1,
@@ -36,7 +40,6 @@ export default {
   created() {},
   methods: {
     isNumber(evt) {
-      console.log(evt.which);
       evt = evt ? evt : window.event;
       var charCode = evt.which ? evt.which : evt.keyCode;
       if (charCode > 31 && (charCode < 48 || charCode > 57)) {
@@ -46,14 +49,17 @@ export default {
       }
     },
     decreaseNumber() {
-      if (this.number > 1) {
-        this.number--;
+      if (this.quantityVal > 1 && this.quantityVal && this.quantityVal != "") {
+        this.$emit("changeQuantity", parseInt(this.quantityVal) - 1);
       }
     },
     increaseNumber() {
-      if (this.number < 999) {
-        this.number++;
+      if (this.quantityVal < 999) {
+        this.$emit("changeQuantity", parseInt(this.quantityVal) + 1);
       }
+    },
+    handleInput(e) {
+      this.$emit("changeQuantity", e.target.value);
     },
   },
 };

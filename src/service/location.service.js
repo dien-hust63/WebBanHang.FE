@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from "../config/config.dev.json";
-const API_URL = `${config.LOCATION_URL_API}`;
+const API_URL = `${config.GHN_URL_API}`;
 class LocationService {
   constructor() {
     this.controller = null,

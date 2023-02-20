@@ -76,7 +76,10 @@
         >
           <v-container>
             <v-row>
-              <v-col cols="12">
+              <v-col
+                cols="12"
+                sm="5"
+              >
                 <v-text-field
                   label="Mã chi nhánh (*)"
                   required
@@ -84,7 +87,11 @@
                   v-model="addBranch.branchcode"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12">
+              <v-col sm="2"></v-col>
+              <v-col
+                cols="12"
+                sm="5"
+              >
                 <v-text-field
                   label="Tên chi nhánh (*)"
                   :rules="[rules.branchNameRule]"
@@ -92,15 +99,74 @@
                   v-model="addBranch.branchname"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12">
+              <v-col
+                cols="12"
+                sm="5"
+              >
+                <v-combobox
+                  label="Tỉnh thành (*)"
+                  v-model="selectedProvince"
+                  item-text="text"
+                  item-value="id"
+                  :items="listProvince"
+                  return-object
+                  dense
+                  @change="changeProvince($event)"
+                  :rules="[rules.provinceRule]"
+                ></v-combobox>
+              </v-col>
+              <v-col sm="2"></v-col>
+              <v-col
+                cols="12"
+                sm="5"
+              >
+                <v-combobox
+                  label="Quận huyện (*)"
+                  v-model="selectedDistrict"
+                  item-text="text"
+                  item-value="id"
+                  :items="listDistrict"
+                  return-object
+                  dense
+                  :disabled="isDisableDistrict"
+                  @change="changeDistrict($event)"
+                  :rules="[rules.districtRule]"
+                ></v-combobox>
+              </v-col>
+              <v-col
+                cols="12"
+                sm="5"
+              >
+
                 <v-text-field
-                  label="Địa chỉ"
-                  persistent-hint
+                  label="Địa chỉ (*)"
                   required
+                  dense
+                  :rules="[rules.addressRule]"
                   v-model="addBranch.address"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12">
+              <v-col sm="2"></v-col>
+              <v-col
+                cols="12"
+                sm="5"
+              >
+                <v-combobox
+                  label="Phường xã (*)"
+                  v-model="selectedWard"
+                  item-text="text"
+                  item-value="id"
+                  :items="listWard"
+                  return-object
+                  dense
+                  :disabled="isDisableWard"
+                  :rules="[rules.wardRule]"
+                ></v-combobox>
+              </v-col>
+              <v-col
+                cols="12"
+                sm="5"
+              >
                 <v-combobox
                   label="Trưởng chi nhánh"
                   v-model="selectedManager"
@@ -109,6 +175,16 @@
                   :items="listEmployee"
                   return-object
                 ></v-combobox>
+              </v-col>
+              <v-col sm="2"></v-col>
+              <v-col
+                cols="12"
+                sm="5"
+              >
+                <v-checkbox
+                  label="Sử dụng làm địa chỉ mặc định tính giá vận chuyển online"
+                  v-model="addBranch.isaddressdefault"
+                ></v-checkbox>
               </v-col>
 
             </v-row>
@@ -126,6 +202,7 @@ import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
 const BranchService = FactoryService.get("branchService");
 const EmployeeService = FactoryService.get("employeeService");
+const LocationService = FactoryService.get("locationService");
 export default {
   name: "BranchList",
   components: {
@@ -140,6 +217,10 @@ export default {
         branchCodeRule: (value) => !!value || "Mã chi nhánh bắt buộc nhập.",
         branchNameRule: (value) => !!value || "Tên chi nhánh bắt buộc nhập.",
         emailMatch: () => `Email hoặc mật khẩu không chính xác.`,
+        provinceRule: (value) => !!value || "Vui lòng chọn tỉnh thành",
+        districtRule: (value) => !!value || "Vui lòng chọn quận huyện",
+        wardRule: (value) => !!value || "Vui lòng chọn phường xã",
+        addressRule: (value) => !!value || "Vui lòng nhập địa chỉ",
       },
       titlePopup: "Thêm chi nhánh",
       popupMode: FormMode.Add,
@@ -172,8 +253,11 @@ export default {
           sortable: false,
           value: "branchname",
         },
-        { text: "Địa chỉ", value: "address" },
         { text: "Trưởng chi nhánh", value: "branchmanagername" },
+        { text: "Địa chỉ", value: "address" },
+        { text: "Xã phường", value: "wardname" },
+        { text: "Quận huyện", value: "districtname" },
+        { text: "Tỉnh thành", value: "provincename" },
       ],
       branchList: [],
       itemPaging: [
@@ -194,12 +278,25 @@ export default {
       filterFormula: "",
       listEmployee: [],
       selectedManager: null,
+
+      /**
+       * address
+       */
+      selectedProvince: null,
+      listProvince: [],
+      isDisableDistrict: true,
+      listDistrict: [],
+      selectedDistrict: null,
+      listWard: [],
+      selectedWard: null,
+      isDisableWard: true,
     };
   },
 
   created() {
     this.getDefaultData();
     this.getAllEmployee();
+    this.getAllProvince();
   },
 
   methods: {
@@ -244,6 +341,18 @@ export default {
     },
     dblclickRow(e, rowData) {
       this.addBranch = rowData.item;
+      this.selectedProvince = {
+        id: rowData.item["provinceid"],
+        text: rowData.item["provincename"],
+      };
+      this.selectedDistrict = {
+        id: rowData.item["districtid"],
+        text: rowData.item["districtname"],
+      };
+      this.selectedWard = {
+        id: rowData.item["wardid"],
+        text: rowData.item["wardname"],
+      };
       if (this.isShowDelete) return;
       this.openEditForm();
     },
@@ -356,6 +465,9 @@ export default {
       this.$refs.form.resetValidation();
       this.isShowPopup = false;
       this.addBranch = {};
+      this.selectedProvince = null;
+      this.selectedDistrict = null;
+      this.selectedWard = null;
     },
     /**
      * xóa dữ liệu
@@ -375,6 +487,62 @@ export default {
         }
       });
     },
+    /**
+     * Lấy danh sách các tỉnh
+     */
+    getAllProvince() {
+      const me = this;
+
+      LocationService.getListProvince()
+        .then((result) => {
+          if (result && result.data) {
+            me.listProvince = result.data.data.map((x) => ({
+              id: x.ProvinceID,
+              text: x.ProvinceName,
+            }));
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    changeProvince(province) {
+      const me = this;
+      me.selectedDistrict = null;
+      me.selectedWard = null;
+      me.deliverPrice = null;
+      LocationService.getDistrictByProvince(province.id)
+        .then((result) => {
+          if (result && result.data) {
+            me.isDisableDistrict = false;
+            me.listDistrict = result.data.data.map((x) => ({
+              id: x.DistrictID,
+              text: x.DistrictName,
+            }));
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    changeDistrict(district) {
+      const me = this;
+      me.selectedWard = null;
+      me.deliverPrice = null;
+      LocationService.getWardByDistrict(district.id)
+        .then((result) => {
+          if (result && result.data) {
+            me.isDisableWard = false;
+            me.listWard = result.data.data.map((x) => ({
+              id: x.WardCode,
+              text: x.WardName,
+            }));
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
   },
 
   watch: {
@@ -393,6 +561,33 @@ export default {
         if (val) {
           this.addBranch["branchmanagerid"] = val["value"];
           this.addBranch["branchmanagername"] = val["text"];
+        }
+      },
+      deep: true,
+    },
+    selectedProvince: {
+      handler: function (val) {
+        if (val) {
+          this.addBranch["provinceid"] = val["id"];
+          this.addBranch["provincename"] = val["text"];
+        }
+      },
+      deep: true,
+    },
+    selectedDistrict: {
+      handler: function (val) {
+        if (val) {
+          this.addBranch["districtid"] = val["id"];
+          this.addBranch["districtname"] = val["text"];
+        }
+      },
+      deep: true,
+    },
+    selectedWard: {
+      handler: function (val) {
+        if (val) {
+          this.addBranch["wardid"] = val["id"];
+          this.addBranch["wardname"] = val["text"];
         }
       },
       deep: true,

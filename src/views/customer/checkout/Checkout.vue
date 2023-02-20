@@ -24,20 +24,32 @@
               <v-row>
                 <v-col cols="12">
                   <v-text-field
-                    label="Họ và tên"
+                    label="Họ và tên (*)"
                     required
                     :rules="[rules.fullNameRule]"
                     outlined
                     dense
+                    v-model="customerInfo.customername"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
-                    label="Số điện thoại"
+                    label="Số điện thoại (*)"
                     :rules="[rules.phonenumberRule]"
                     required
                     outlined
                     dense
+                    v-model="customerInfo.customerphone"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Email (*)"
+                    :rules="rules.emailMatch"
+                    required
+                    outlined
+                    dense
+                    v-model="customerInfo.customeremail"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -47,11 +59,12 @@
                     required
                     outlined
                     dense
+                    v-model="customerInfo.customerdescription"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-combobox
-                    label="Tỉnh thành"
+                    label="Tỉnh thành (*)"
                     v-model="selectedProvince"
                     item-text="text"
                     item-value="id"
@@ -60,37 +73,47 @@
                     outlined
                     dense
                     @change="changeProvince($event)"
+                    :rules="[rules.provinceRule]"
                   ></v-combobox>
                 </v-col>
                 <v-col cols="12">
                   <v-combobox
-                    label="Quận huyện"
+                    label="Quận huyện (*)"
                     v-model="selectedDistrict"
                     item-text="text"
                     item-value="id"
                     :items="listDistrict"
                     return-object
-                    outlined
                     dense
                     :disabled="isDisableDistrict"
                     @change="changeDistrict($event)"
+                    :rules="[rules.districtRule]"
                   ></v-combobox>
                 </v-col>
                 <v-col cols="12">
                   <v-combobox
-                    label="Phường xã"
+                    label="Phường xã (*)"
                     v-model="selectedWard"
                     item-text="text"
                     item-value="id"
                     :items="listWard"
                     return-object
-                    outlined
                     dense
                     :disabled="isDisableWard"
                     @change="changeWard($event)"
+                    :rules="[rules.wardRule]"
                   ></v-combobox>
                 </v-col>
-
+                <v-col cols="12">
+                  <v-text-field
+                    label="Địa chỉ (*)"
+                    required
+                    outlined
+                    dense
+                    :rules="[rules.addressRule]"
+                    v-model="customerInfo.customeraddress"
+                  ></v-text-field>
+                </v-col>
               </v-row>
             </v-container>
           </v-form>
@@ -99,22 +122,30 @@
           <div class="deliver-cost">
             <div class="title">Vận chuyển</div>
             <div class="deliver-cost-content">
-              <div class="deliver-cost-text">Phí vận chuyển</div>
-              <div class="deliver-cost-price">20000đ</div>
+              <div
+                v-if="deliverPrice"
+                class="deliver-cost-content-hasvalue"
+              >
+                <div class="deliver-cost-text">Phí vận chuyển</div>
+                <div class="deliver-cost-price">{{deliverPrice}}đ</div>
+              </div>
+              <div v-if="!deliverPrice">
+                <div class="deliver-cost-text-required">Vui lòng nhập thông tin giao hàng</div>
+              </div>
             </div>
           </div>
           <div class="payment-method">
-            <div class="title">Thanh toán</div>
+            <div class="title mt-4">Thanh toán</div>
             <div class="payment-radio-group">
 
               <v-radio-group v-model="radios">
                 <v-radio
                   label="	Thanh toán qua thẻ thanh toán, ứng dụng ngân hàng VNPAY"
-                  value="1"
+                  :value="1"
                 ></v-radio>
                 <v-radio
                   label="Thanh toán khi nhận hàng (COD)"
-                  value="2"
+                  :value="2"
                 ></v-radio>
               </v-radio-group>
             </div>
@@ -123,42 +154,49 @@
       </div>
     </div>
     <div class="bkc-checkout-order-info">
-      <div class="title">Đơn hàng (1 sản phẩm)</div>
+      <div class="title">Đơn hàng ({{$store.state.cart.totalCartItem}} sản phẩm)</div>
       <div class="bkc-checkout-order-product-list">
 
         <div
           class="cart-mini-body-item"
-          v-for="i in 3"
-          :key="i"
+          v-for="(item, index) in $store.state.cart.cartList"
+          :key="index"
         >
           <div class="cart-mini-item-image">
-            <v-img src="https://nvdien.blob.core.windows.net/images/test.jpg"></v-img>
+            <v-img :src="item.image"></v-img>
             <div class="quantity-total">
-              1
+              {{item.quantity}}
             </div>
           </div>
           <div class="cart-mini-item-content pl-3">
             <div class="cart-mini-item-content-left">
 
               <div class="mini-item-name">
-                <div class="mini-item-product-name">Quần jeans nam Rayon phom slim siêu mềm</div>
+                <div class="mini-item-product-name"> {{item.productname}}</div>
               </div>
 
-              <div class="mini-item-color-size">Màu sắc: Trắng, Size: 30</div>
+              <div class="mini-item-color-size">Màu sắc: {{item.color}}, Size: {{item.size}}</div>
 
             </div>
-            <div class="mini-item-price ml-4">529000đ</div>
+            <div class="mini-item-price ml-4">{{item.quantity * item.sellprice}}đ</div>
           </div>
         </div>
       </div>
       <div class="checkout-price-total mt-4">
         <div class="checkout-deliver-price">
           <div class="text">Phí vận chuyển</div>
-          <div class="price">20000đ</div>
+          <div
+            class="price"
+            v-if="deliverPrice"
+          >{{deliverPrice}}đ</div>
+          <div
+            class="price"
+            v-if="!deliverPrice"
+          >-</div>
         </div>
         <div class="checkout-order-total mt-2">
           <div class="text">Tổng cộng</div>
-          <div class="price-total">379000đ</div>
+          <div class="price-total">{{totalPrice}}đ</div>
         </div>
       </div>
       <div class="checkout-order-info-footer mt-4">
@@ -189,18 +227,30 @@
 <script>
 import { FactoryService } from "../../../service/factory/factory.service";
 const LocationService = FactoryService.get("locationService");
+const DeliverService = FactoryService.get("deliverService");
+const BranchService = FactoryService.get("branchService");
+const PaymentService = FactoryService.get("paymentService");
 export default {
   name: "CCheckout",
   created() {
     this.getAllProvince();
+    this.getAllBranch();
   },
   data() {
     return {
       rules: {
         fullNameRule: (value) => !!value || "Vui lòng nhập họ tên",
         phonenumberRule: (value) => !!value || "Vui lòng nhập số điện thoại",
+        emailMatch: [
+          (v) => !!v || "E-mail bắt buộc nhập.",
+          (v) => /.+@.+\..+/.test(v) || "E-mail không hợp lệ.",
+        ],
+        provinceRule: (value) => !!value || "Vui lòng chọn tỉnh thành",
+        districtRule: (value) => !!value || "Vui lòng chọn quận huyện",
+        wardRule: (value) => !!value || "Vui lòng chọn phường xã",
+        addressRule: (value) => !!value || "Vui lòng nhập địa chỉ",
       },
-      radios: "",
+      radios: null,
       selectedProvince: null,
       listProvince: [],
       isDisableDistrict: true,
@@ -209,10 +259,95 @@ export default {
       listWard: [],
       selectedWard: null,
       isDisableWard: true,
+      customerInfo: {},
+      validForm: true,
+      deliverPrice: null,
+      defaultBranch: null,
     };
   },
   methods: {
-    orderProduct() {},
+    /**
+     * Kiểm tra dữ liệu trước khi lưu
+     */
+    validateBeforeSave(dataSave) {
+      this.$refs.form.validate();
+      if (
+        !this.validForm ||
+        !dataSave ||
+        (dataSave && Object.keys(dataSave).length === 0)
+      ) {
+        return false;
+      }
+      if (!this.radios) {
+        this.$toast.warning("Vui lòng chọn hình thức thanh toán");
+        return false;
+      }
+      return true;
+    },
+    /**
+     * check validate và đặt hàng
+     */
+    orderProduct() {
+      let isValid = this.validateBeforeSave(this.customerInfo);
+      if (!isValid) {
+        return;
+      }
+      this.handleOrder();
+    },
+    /**
+     * Tiến hành dặt hàng
+     */
+    handleOrder() {
+      const me = this;
+      // Lưu vào db đơn hàng ở trạng thái chờ tiếp nhận, với trạng thái thanh toán: Chưa thanh toán
+      sessionStorage.setItem(
+        "customerCheckoutInfo",
+        JSON.stringify(this.customerInfo)
+      );
+      if (me.radios == 1) {
+        // thanh toán qua vnpay
+        let param = {
+          Amount: me.totalPrice,
+        };
+        PaymentService.getVNPayLink(param)
+          .then((result) => {
+            if (result && result.data) {
+              let vnpayUrl = result.data.data;
+              window.location.href = vnpayUrl;
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
+    },
+    /**
+     * Lấy danh sách các tỉnh
+     */
+    getAllBranch() {
+      const me = this;
+      BranchService.getAllData()
+        .then((result) => {
+          if (
+            result &&
+            result.data &&
+            result.data.data &&
+            result.data.data.length > 0
+          ) {
+            let index = result.data.data.findIndex(
+              (x) => x.isaddressdefault == true
+            );
+            if (index > -1) {
+              me.defaultBranch = result.data.data[index];
+            } else {
+              me.defaultBranch = result.data.data[0];
+            }
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
     /**
      * Lấy danh sách các tỉnh
      */
@@ -232,8 +367,40 @@ export default {
           console.log(e);
         });
     },
+    changeWard(ward) {
+      if (ward && this.selectedProvince && this.selectedDistrict) {
+        const me = this;
+        let param = {
+          from_district_id: this.defaultBranch.districtid,
+          service_type_id: 2,
+          to_district_id: this.selectedDistrict["id"],
+          to_ward_code: this.selectedWard["id"],
+          height: 5,
+          length: 30,
+          weight: 20,
+          width: 20,
+          insurance_value: this.totalPrice,
+          coupon: null,
+        };
+        // gọi lấy thông tin vận chuyển
+        DeliverService.getDeliverPrice(param)
+          .then((result) => {
+            if (result) {
+              me.deliverPrice = result.data.data.service_fee;
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      } else {
+        this.deliverPrice = null;
+      }
+    },
     changeProvince(province) {
       const me = this;
+      me.selectedDistrict = null;
+      me.selectedWard = null;
+      me.deliverPrice = null;
       LocationService.getDistrictByProvince(province.id)
         .then((result) => {
           if (result && result.data) {
@@ -250,14 +417,17 @@ export default {
     },
     changeDistrict(district) {
       const me = this;
+      me.selectedWard = null;
+      me.deliverPrice = null;
       LocationService.getWardByDistrict(district.id)
         .then((result) => {
           if (result && result.data) {
             me.isDisableWard = false;
             me.listWard = result.data.data.map((x) => ({
-              id: x.WardID,
+              id: x.WardCode,
               text: x.WardName,
             }));
+            console.log(me.listWard);
           }
         })
         .catch((e) => {
@@ -268,6 +438,19 @@ export default {
       this.$router.push({
         name: "c-cart",
       });
+    },
+  },
+  computed: {
+    totalPrice() {
+      let tempTotal = this.$store.state.cart.cartList.reduce(
+        (sum, item) => sum + item.sellprice * item.quantity,
+        0
+      );
+      if (this.deliverPrice) {
+        return parseInt(this.deliverPrice) + tempTotal;
+      } else {
+        return tempTotal;
+      }
     },
   },
 };

@@ -45,6 +45,14 @@ const routerCustomer = [
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "checkout" */ '../../views/customer/checkout/Checkout.vue'),
       },
+      {
+        path: '/checkout/result',
+        name: 'c-checkout-result',
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import(/* webpackChunkName: "checkoutresult" */ '../../views/customer/checkout/CheckoutResult.vue'),
+      },
       
 ]
 export default routerCustomer;

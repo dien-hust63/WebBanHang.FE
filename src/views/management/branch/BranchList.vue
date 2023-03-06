@@ -165,27 +165,22 @@
               </v-col>
               <v-col
                 cols="12"
-                sm="5"
+                sm="6"
               >
-                <v-combobox
+                <v-checkbox
+                  label="Sử dụng làm địa chỉ mặc định tính giá vận chuyển online"
+                  v-model="addBranch.isaddressdefault"
+                ></v-checkbox>
+                <!-- <v-combobox
                   label="Trưởng chi nhánh"
                   v-model="selectedManager"
                   item-text="text"
                   item-value="value"
                   :items="listEmployee"
                   return-object
-                ></v-combobox>
+                ></v-combobox> -->
               </v-col>
-              <v-col sm="2"></v-col>
-              <v-col
-                cols="12"
-                sm="5"
-              >
-                <v-checkbox
-                  label="Sử dụng làm địa chỉ mặc định tính giá vận chuyển online"
-                  v-model="addBranch.isaddressdefault"
-                ></v-checkbox>
-              </v-col>
+              <v-col sm="6"></v-col>
 
             </v-row>
           </v-container>
@@ -253,7 +248,7 @@ export default {
           sortable: false,
           value: "branchname",
         },
-        { text: "Trưởng chi nhánh", value: "branchmanagername" },
+        //{ text: "Trưởng chi nhánh", value: "branchmanagername" },
         { text: "Địa chỉ", value: "address" },
         { text: "Xã phường", value: "wardname" },
         { text: "Quận huyện", value: "districtname" },

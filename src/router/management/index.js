@@ -1,7 +1,7 @@
 const routerManagement = [
-    {
+      {
         path: '/management',
-        redirect:"/management/order",
+        redirect:"/management/login",
       },
       {
         path: '/management/customer',
@@ -18,6 +18,12 @@ const routerManagement = [
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "order" */ '../../views/management/order/OrderList.vue')
+      },
+      {
+        path: '/management/order/:id',
+        name: "m-order-detail",
+        component: () =>
+            import(/*webpackChunkName "orderdetail" */ '../../views/management/order/OrderDetail.vue')
       },
       {
         path: '/management/promotion',
@@ -49,6 +55,7 @@ const routerManagement = [
         component: () =>
             import(/*webpackChunkName "product" */ '../../views/management/product/ProductDetail.vue')
       },
+      
       {
         path: '/management/report',
         name: 'm-report',
@@ -56,6 +63,14 @@ const routerManagement = [
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "promotion" */ '../../views/management/report/ReportList.vue')
+      },
+      {
+        path: '/management/login',
+        name: 'm-login',
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import('../../views/management/login/Login.vue')
       },
       {
         path: '/management/setting',

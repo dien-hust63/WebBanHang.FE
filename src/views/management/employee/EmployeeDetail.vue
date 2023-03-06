@@ -129,6 +129,39 @@
                 ></v-combobox>
               </v-col>
             </v-row>
+            <v-row>
+              <v-col
+                cols="12"
+                sm="5"
+                class="px-8"
+              >
+                <v-combobox
+                  label="Vai trò"
+                  v-model="selectedRole"
+                  item-text="text"
+                  item-value="value"
+                  :items="listRole"
+                  return-object
+                  :disabled="isViewMode"
+                ></v-combobox>
+              </v-col>
+              <v-col sm="2"></v-col>
+              <v-col
+                cols="12"
+                sm="5"
+                class="px-8"
+              >
+                <v-combobox
+                  label="Trạng thái"
+                  v-model="selectedStatus"
+                  item-text="text"
+                  item-value="value"
+                  :items="listStatus"
+                  return-object
+                  :disabled="isViewMode"
+                ></v-combobox>
+              </v-col>
+            </v-row>
           </v-container>
         </v-form>
       </v-card-text>
@@ -142,6 +175,7 @@ import AccountStatus from "../../../enum/AccountStatusEnum";
 import { FactoryService } from "../../../service/factory/factory.service";
 const EmployeeService = FactoryService.get("employeeService");
 const BranchService = FactoryService.get("branchService");
+const RoleService = FactoryService.get("roleService");
 export default {
   name: "EmployeeDetail",
   data() {
@@ -162,6 +196,13 @@ export default {
       listBranch: [],
       selectedBranch: null,
       accountStatus: AccountStatus.NotActive,
+      listStatus: [
+        { value: 1, text: "Chưa kích hoạt" },
+        { value: 2, text: "Đã kích hoạt" },
+      ],
+      selectedStatus: { value: 1, text: "Chưa kích hoạt" },
+      selectedRole: null,
+      listRole: [],
     };
   },
   created() {
@@ -170,9 +211,28 @@ export default {
       this.formMode = parseInt(this.$route.query.mode) ?? FormMode.Vỉew;
     }
     this.getAllBranch();
+    this.getAllRole();
     this.getEmployeeInfo();
   },
   methods: {
+    /**
+     * Lấy danh sách toàn bộ vai trò
+     */
+    getAllRole() {
+      const me = this;
+      RoleService.getAllData()
+        .then((result) => {
+          if (result && result.data) {
+            me.listRole = result.data.data.map((x) => ({
+              value: x.idrole,
+              text: x.rolename,
+            }));
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
     /**
      * Lấy danh sách toàn bộ nhân viên
      */
@@ -205,6 +265,18 @@ export default {
           if (result && result.data) {
             me.currentData = result.data.data;
             me.title = `Nhân viên ${me.currentData.employeecode} - ${me.currentData.employeename}`;
+            me.selectedBranch = {
+              text: me.currentData["branchname"],
+              value: me.currentData["branchid"],
+            };
+            me.selectedRole = {
+              text: me.currentData["rolename"],
+              value: me.currentData["roleid"],
+            };
+            me.selectedStatus = {
+              text: me.currentData["statusname"],
+              value: me.currentData["statusid"],
+            };
           }
         })
         .catch((e) => {
@@ -250,7 +322,7 @@ export default {
      */
     insertEmployee() {
       this.currentData.statusid = AccountStatus.NotActive;
-      this.currentData.statustext = "Chưa kích hoạt";
+      this.currentData.statusname = "Chưa kích hoạt";
       const me = this;
       EmployeeService.insertData(this.currentData).then((result) => {
         if (result && result.data) {
@@ -275,7 +347,7 @@ export default {
       ).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Sửa chi nhánh thành công!");
+            me.$toast.success("Sửa nhân viên thành công!");
             me.formMode = FormMode.View;
             me.getEmployeeInfo(result.data.data.idemployee);
           } else {
@@ -340,6 +412,24 @@ export default {
         if (val) {
           this.currentData["branchid"] = val["value"];
           this.currentData["branchname"] = val["text"];
+        }
+      },
+      deep: true,
+    },
+    selectedRole: {
+      handler: function (val) {
+        if (val) {
+          this.currentData["roleid"] = val["value"];
+          this.currentData["rolename"] = val["text"];
+        }
+      },
+      deep: true,
+    },
+    selectedStatus: {
+      handler: function (val) {
+        if (val) {
+          this.currentData["statusid"] = val["value"];
+          this.currentData["statusname"] = val["text"];
         }
       },
       deep: true,

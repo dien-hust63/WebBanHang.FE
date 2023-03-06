@@ -10,6 +10,9 @@
       deleteBtn="Xóa hàng hóa"
       searchTitle="Tìm kiếm theo mã, tên hàng hóa"
       @onSearch="searchData"
+      :listPermission="listPermissionInModule"
+      :isShowBranch="true"
+      @changeBranch="changeBranchHeader"
     />
     <div class="bk-list-body">
       <v-data-table
@@ -65,10 +68,12 @@
 </template>
 <script>
 import MHeader from "../../../components/management/header/MHeader.vue";
-import { FactoryService } from "../../../service/factory/factory.service";
+
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
+import { FactoryService } from "../../../service/factory/factory.service";
 const ProductService = FactoryService.get("productService");
+const AuthService = FactoryService.get("authService");
 export default {
   name: "productList",
   components: {
@@ -76,6 +81,12 @@ export default {
   },
   data() {
     return {
+      currentSearch: "",
+      currentBranch: {
+        id: "0",
+        text: "",
+      },
+      listPermissionInModule: "",
       isShowDelete: false,
       validForm: true,
       rules: {
@@ -149,15 +160,48 @@ export default {
   },
 
   created() {
-    this.getDefaultData();
+    //me.getDefaultData();
+    const me = this;
+    let user = JSON.parse(localStorage.getItem("user"));
+    AuthService.getPermission(user.userInfo).then((result) => {
+      if (result && result.data) {
+        let listPermissionClone = [...result.data.data];
+        me.listPermissionInModule = listPermissionClone.find(
+          (x) => x.modulecode == "ProductList"
+        ).permission;
+      }
+    });
   },
 
   methods: {
+    changeBranchHeader(branch) {
+      this.currentBranch = branch;
+      this.listFilter = [
+        {
+          FieldName: "productcode",
+          Operator: Operator.Like,
+          FilterValue: this.currentSearch,
+        },
+        {
+          FieldName: "productname",
+          Operator: Operator.Like,
+          FilterValue: this.currentSearch,
+        },
+        {
+          FieldName: "branchid",
+          Operator: Operator.Equal,
+          FilterValue: branch?.id.toString() ?? "0",
+        },
+      ];
+      this.filterFormula = "({0} OR {1}) AND {2}";
+      this.getDefaultData();
+    },
     /**
      * Tim kiem theo ma va ten vai tro
      * @param {} data
      */
     searchData(data) {
+      this.currentSearch = data;
       this.listFilter = [
         {
           FieldName: "productcode",
@@ -169,8 +213,13 @@ export default {
           Operator: Operator.Like,
           FilterValue: data,
         },
+        {
+          FieldName: "branchid",
+          Operator: Operator.Equal,
+          FilterValue: this.currentBranch?.id.toString() ?? "0",
+        },
       ];
-      this.filterFormula = "{0} OR {1}";
+      this.filterFormula = "({0} OR {1}) AND {2}";
       this.getDefaultData();
     },
     dblclickRow(e, rowData) {

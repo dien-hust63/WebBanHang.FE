@@ -172,10 +172,12 @@ const EmployeeService = FactoryService.get("employeeService");
 const RoleService = FactoryService.get("roleService");
 const BranchService = FactoryService.get("branchService");
 const ModuleService = FactoryService.get("moduleService");
+const AuthService = FactoryService.get("authService");
 export default {
   name: "RoleDetail",
   data() {
     return {
+      listPermissionInModule: "",
       title: "Thêm vai trò",
       formMode: FormMode.Add,
       isViewMode: false,
@@ -214,6 +216,16 @@ export default {
     this.getAllBranch();
     this.getDataDetail();
     this.getModulePermissionDefault();
+    const me = this;
+    let user = JSON.parse(localStorage.getItem("user"));
+    AuthService.getPermission(user.userInfo).then((result) => {
+      if (result && result.data) {
+        let listPermissionClone = [...result.data.data];
+        me.listPermissionInModule = listPermissionClone.find(
+          (x) => x.modulecode == "ProductList"
+        ).permission;
+      }
+    });
   },
   methods: {
     updatePermission(chosen, item) {
@@ -344,6 +356,13 @@ export default {
       });
     },
     openFormEdit() {
+      if (
+        !this.listPermissionInModule.includes("Edit") &&
+        !this.listPermissionInModule.includes("All")
+      ) {
+        this.$toast.error("Bạn không có quyền thực hiện tính năng này.");
+        return;
+      }
       if (this.currentData && this.currentData.rolecode == "R00001") {
         this.$toast.error("Quyền quản trị hệ thống là mặc định toàn quyền.");
         return;
@@ -425,7 +444,7 @@ export default {
       RoleService.updateRoleCustom(param).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Sửa chi nhánh thành công!");
+            me.$toast.success("Sửa vai trò thành công!");
             me.formMode = FormMode.View;
             this.$router.push({
               name: "m-role-detail",

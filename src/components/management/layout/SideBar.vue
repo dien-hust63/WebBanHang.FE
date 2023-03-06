@@ -15,11 +15,12 @@
             class="d-block text-center mx-auto mt-4 mb-10"
             size="120"
           >
-            <v-img src="https://nvdien.blob.core.windows.net/images/360formen.png"></v-img>
+            <v-img src="https://nvdien1.blob.core.windows.net/image/360formen.png"></v-img>
           </v-avatar>
+          <h6>{{ $store.state.auth.user.userInfo.username}} ( {{ $store.state.auth.user.userInfo.usercode}} )</h6>
         </v-list-item-title>
       </v-list-item>
-      <v-divider dark="true"></v-divider>
+      <v-divider></v-divider>
       <v-list
         nav
         dense
@@ -29,40 +30,42 @@
           color="deep-purple"
         >
           <v-list-item
-            v-for="(item, i) in items"
+            v-for="(item, i) in listModule"
             :key="i"
-            @click="handleMenuClick(item.name)"
+            @click="handleMenuClick(item.routename)"
           >
             <v-list-item-icon>
               <v-icon v-text="item.icon"></v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title v-text="item.text"></v-list-item-title>
+              <v-list-item-title v-text="item.modulename"></v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-group
             :value="false"
             prepend-icon="mdi-package-variant-closed"
             color="deep-purple"
+            v-for="(item) in listModuleParent"
+            :key="item.idmodule"
           >
             <template v-slot:activator>
-              <v-list-item-title>Hàng hóa</v-list-item-title>
+              <v-list-item-title>{{item.modulename}}</v-list-item-title>
             </template>
 
             <v-list-item
-              v-for="([title, icon,name], i) in listProducts"
-              :key="i"
+              v-for="(item) in item.listchild"
+              :key="item.idmodule"
               link
-              @click="handleMenuClick(name)"
+              @click="handleMenuClick(item.routename)"
             >
               <v-list-item-icon>
-                <v-icon v-text="icon"></v-icon>
+                <v-icon v-text="item.icon"></v-icon>
               </v-list-item-icon>
-              <v-list-item-title v-text="title"></v-list-item-title>
+              <v-list-item-title v-text="item.modulename"></v-list-item-title>
             </v-list-item>
           </v-list-group>
 
-          <v-list-group
+          <!-- <v-list-group
             :value="false"
             prepend-icon="fas fa-cog"
             color="deep-purple"
@@ -81,7 +84,7 @@
               </v-list-item-icon>
               <v-list-item-title v-text="title"></v-list-item-title>
             </v-list-item>
-          </v-list-group>
+          </v-list-group> -->
         </v-list-item-group>
       </v-list>
       <!-- <v-list-item class="px-2 pt-5 sidebar-branch">
@@ -97,11 +100,14 @@
   </div>
 </template>
 <script>
+import { FactoryService } from "../../../service/factory/factory.service";
+const AuthService = FactoryService.get("authService");
 export default {
   data: () => ({
     selectedItem: 0,
     drawer: null,
     listModule: [],
+    listModuleParent: [],
     items: [
       {
         icon: "mdi-finance",
@@ -127,7 +133,7 @@ export default {
     listProducts: [
       ["Danh mục", "", "m-product"],
       ["Nhóm hàng hóa", "", "m-productcategory"],
-      ["Thiết lập giá", "", "m-role"],
+      // ["Thiết lập giá", "", "m-role"],
     ],
     settings: [
       ["Chi nhánh", "", "m-branch"],
@@ -135,9 +141,38 @@ export default {
       ["Vai trò", "", "m-role"],
     ],
     listBranch: [],
+    listPermission: [],
   }),
   created() {
+    const me = this;
     this.getModulePermission();
+    let user = JSON.parse(localStorage.getItem("user"));
+    AuthService.getPermission(user.userInfo).then((result) => {
+      if (result && result.data) {
+        me.listPermission = [...result.data.data];
+        let listPermissionClone = [...me.listPermission];
+
+        listPermissionClone.forEach((element) => {
+          if (
+            (element.permission.includes("All") ||
+              element.permission.includes("View")) &&
+            element.parentid == 0
+          ) {
+            if (element.isparent) {
+              element["listchild"] = listPermissionClone.filter(
+                (x) =>
+                  x.parentid == element.idmodule &&
+                  (x.permission.includes("All") ||
+                    x.permission.includes("View"))
+              );
+              me.listModuleParent.push(element);
+            } else {
+              me.listModule.push(element);
+            }
+          }
+        });
+      }
+    });
   },
   methods: {
     getModulePermission() {

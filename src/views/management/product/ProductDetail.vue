@@ -331,6 +331,7 @@ import { AZURE_STORAGE_BASE_URL } from "../../../config/config.dev.json";
 const ProductService = FactoryService.get("productService");
 const BranchService = FactoryService.get("branchService");
 const ProductCategoryService = FactoryService.get("productcategoryService");
+const AuthService = FactoryService.get("authService");
 export default {
   name: "ProductDetail",
   components: {
@@ -383,6 +384,7 @@ export default {
       listSizeSelected: [],
       selectedColor: "",
       listFiles: [],
+      listPermissionInModule: "",
     };
   },
   created() {
@@ -393,6 +395,16 @@ export default {
     //this.getAllBranch();
     this.getAllProductCategory();
     this.getDetailInfo();
+    const me = this;
+    let user = JSON.parse(localStorage.getItem("user"));
+    AuthService.getPermission(user.userInfo).then((result) => {
+      if (result && result.data) {
+        let listPermissionClone = [...result.data.data];
+        me.listPermissionInModule = listPermissionClone.find(
+          (x) => x.modulecode == "ProductList"
+        ).permission;
+      }
+    });
   },
   methods: {
     removeProductItem(index) {
@@ -494,6 +506,13 @@ export default {
       });
     },
     openFormEdit() {
+      if (
+        !this.listPermissionInModule.includes("Edit") &&
+        !this.listPermissionInModule.includes("All")
+      ) {
+        this.$toast.error("Bạn không có quyền thực hiện tính năng này.");
+        return;
+      }
       this.$router
         .push({
           query: { mode: FormMode.Edit },

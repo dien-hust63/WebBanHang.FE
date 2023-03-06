@@ -17,6 +17,21 @@
             v-model="searchValue"
           >
         </div>
+        <div
+          class="branch-area-toolbar ml-4"
+          v-if="isShowBranch"
+        >
+          <v-combobox
+            label="Chi nhánh"
+            v-model="chosenBranch"
+            item-text="text"
+            item-value="id"
+            :items="listBranch"
+            return-object
+            @change="changebranch($event)"
+          ></v-combobox>
+        </div>
+
       </div>
       <div class="right-section bk-flex-end">
         <v-dialog
@@ -71,12 +86,16 @@
 </template>
 
 <script>
+import { FactoryService } from "../../../service/factory/factory.service";
+const BranchService = FactoryService.get("branchService");
 export default {
   name: "Mheader",
   data() {
     return {
       deleteConfigDialog: false,
       searchValue: "",
+      chosenBranch: null,
+      listBranch: [],
     };
   },
   props: {
@@ -86,12 +105,49 @@ export default {
     isShowDelete: Boolean,
     deleteBtn: String,
     searchTitle: String,
+    isShowBranch: Boolean,
+    listPermission: String,
+  },
+  created() {
+    const me = this;
+    if (me.isShowBranch) {
+      let user = JSON.parse(localStorage.getItem("user"));
+      BranchService.getBrancByUser(user.userInfo).then((result) => {
+        if (result && result.data) {
+          me.listBranch = result.data.data.map((x) => ({
+            id: x.idbranch,
+            text: x.branchname,
+          }));
+          if (me.listBranch.length > 0) {
+            me.chosenBranch = me.listBranch[0];
+            this.$emit("changeBranch", me.chosenBranch);
+          }
+        }
+      });
+    }
   },
   methods: {
+    changebranch(e) {
+      this.$emit("changeBranch", e);
+    },
     openAddForm() {
+      if (
+        !this.listPermission.includes("Add") &&
+        !this.listPermission.includes("All")
+      ) {
+        this.$toast.error("Bạn không có quyền thực hiện tính năng này.");
+        return;
+      }
       this.$emit("openAddForm");
     },
     deleteData() {
+      if (
+        !this.listPermission.includes("Delete") &&
+        !this.listPermission.includes("All")
+      ) {
+        this.$toast.error("Bạn không có quyền thực hiện tính năng này.");
+        return;
+      }
       this.$emit("deleteData");
     },
     onSearch() {

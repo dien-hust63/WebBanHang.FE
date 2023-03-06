@@ -1,86 +1,94 @@
 <template>
-  <div class="bk-order-list bk-list">
-    <MHeader
-      :title="title"
-      :subtitle="subtitle"
-      addBtn='Thêm đơn hàng'
-      @openAddForm="openAddForm"
-      @deleteData="deleteData"
-      :isShowDelete="isShowDelete"
-      deleteBtn="Xóa đơn hàng"
-      searchTitle="Tìm kiếm theo mã, tên đơn hàng"
-      @onSearch="searchData"
-      :isShowBranch="true"
-      :listPermission="listPermissionInModule"
-    />
-    <div class="bk-list-body">
-      <v-data-table
-        v-model="selected"
-        :headers="headers"
-        :items="orderList"
-        item-key="ordercode"
-        show-select
-        hide-default-footer
-        fixed-header
-        @dblclick:row="dblclickRow"
-        no-data-text="Không có dữ liệu"
-      >
-      </v-data-table>
-    </div>
-    <div class="bk-list-footer bk-flex bk-flex-between">
-      <v-row
-        no-gutters
-        style="height: 60px;"
-        align-content="center"
-      >
-        <v-col class="bk-flex">
-          <h6>
-            Tổng bản ghi: {{totalPage}}
-          </h6>
-        </v-col>
-        <v-col justify-content="center">
-          <v-pagination
-            v-model="pageIndex"
-            :length="pageShow"
-            :total-visible="pageShow"
-          ></v-pagination>
-        </v-col>
-        <v-col>
-          <v-row class="m-0 bk-paging-number">
-            <v-col class="p-0"></v-col>
-            <v-col class="p-0">
-              <v-select
-                v-model="pageSize"
-                :items="itemPaging"
-                label="Solo field"
-                solo
-                dense
-                width="100"
-              ></v-select>
+  <div class="bk-product-popup">
+    <!-- <base-popup
+      :isShowPopup="isShowPopup"
+      @closePopup="closeAddProductPopup"
+      maxwidth="760px"
+      :title="titlePopup"
+      @saveData="addProductToOrder"
+    >
+      <div class="bk-product-list bk-list">
+        <MHeader
+          :title="title"
+          :subtitle="subtitle"
+          addBtn='Thêm hàng hóa'
+          @openAddForm="openAddForm"
+          @deleteData="deleteData"
+          :isShowDelete="isShowDelete"
+          deleteBtn="Xóa hàng hóa"
+          searchTitle="Tìm kiếm theo mã, tên hàng hóa"
+          @onSearch="searchData"
+        />
+        <div class="bk-list-body">
+          <v-data-table
+            v-model="selected"
+            :headers="headers"
+            :items="productList"
+            item-key="productcode"
+            show-select
+            hide-default-footer
+            fixed-header
+            @dblclick:row="dblclickRow"
+            no-data-text="Không có dữ liệu"
+          >
+          </v-data-table>
+        </div>
+        <div class="bk-list-footer bk-flex bk-flex-between">
+          <v-row
+            no-gutters
+            style="height: 60px;"
+            align-content="center"
+          >
+            <v-col class="bk-flex">
+              <h6>
+                Tổng bản ghi: {{totalPage}}
+              </h6>
             </v-col>
+            <v-col justify-content="center">
+              <v-pagination
+                v-model="pageIndex"
+                :length="pageShow"
+                :total-visible="pageShow"
+              ></v-pagination>
+            </v-col>
+            <v-col>
+              <v-row class="m-0 bk-paging-number">
+                <v-col class="p-0"></v-col>
+                <v-col class="p-0">
+                  <v-select
+                    v-model="pageSize"
+                    :items="itemPaging"
+                    label="Solo field"
+                    solo
+                    dense
+                    width="100"
+                  ></v-select>
+                </v-col>
 
+              </v-row>
+            </v-col>
           </v-row>
-        </v-col>
-      </v-row>
-    </div>
+        </div>
+      </div>
+
+    </base-popup> -->
+    ok
   </div>
 </template>
-  <script>
-import MHeader from "../../../components/management/header/MHeader.vue";
+<script>
+//import MHeader from "../../../components/management/header/MHeader.vue";
 
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
 import { FactoryService } from "../../../service/factory/factory.service";
-const OrderService = FactoryService.get("productService");
-const AuthService = FactoryService.get("authService");
+const ProductService = FactoryService.get("productService");
 export default {
-  name: "OrderList",
+  name: "ProductPopup",
   components: {
-    MHeader,
+    //MHeader,
   },
   data() {
     return {
-      listPermissionInModule: "",
       isShowDelete: false,
       validForm: true,
       rules: {
@@ -94,52 +102,44 @@ export default {
       titlePopup: "Thêm chi nhánh",
       popupMode: FormMode.Add,
       addEmployee: {},
-      isShowPopup: false,
       maxPageShow: 7,
       pageShow: 1,
       pageSize: 10,
       pageIndex: 1,
       totalPage: 0,
-      title: "Đơn hàng",
-      subtitle: "Danh sách các đơn hàng",
+      title: "Hàng hóa",
+      subtitle: "Danh sách các hàng hóa",
       selected: [],
       headers: [
         {
-          text: "Ngày mua hàng",
-          align: "start",
-          sortable: false,
-          value: "orderdate",
-        },
-        {
-          text: "ID đơn hàng",
+          text: "ID hàng hóa",
           align: " d-none",
           sortable: false,
-          value: "idorder",
+          value: "idproduct",
         },
         {
-          text: "Mã đơn hàng",
+          text: "Mã hàng hóa",
           align: "start",
           sortable: false,
-          value: "ordercode",
+          value: "productcode",
         },
         {
-          text: "Tên khách hàng",
+          text: "Tên hàng hóa",
           align: "start",
           sortable: false,
-          value: "customername",
+          value: "productname",
         },
         {
-          text: "Tổng tiền",
+          text: "Nhóm hàng hóa",
           align: "start",
           sortable: false,
-          value: "customername",
+          value: "categoryname",
         },
-        { text: "Trạng thái", value: "statusname" },
-        { text: "Nhân viên tiếp nhận", value: "receiveemployeename" },
-        { text: "Hình thức mua hàng", value: "ordertype" },
-        { text: "Chi nhánh", value: "branchname" },
+        { text: "Giá vốn", value: "costprice" },
+        { text: "Giá bán", value: "sellprice" },
+        { text: "Tồn kho", value: "inventory" },
       ],
-      orderList: [],
+      productList: [],
       itemPaging: [
         {
           text: "10 bản ghi/ trang",
@@ -159,22 +159,17 @@ export default {
       listBranch: [],
     };
   },
-
+  props: {
+    isShowPopup: Boolean,
+  },
   created() {
     this.getDefaultData();
-    const me = this;
-    let user = JSON.parse(localStorage.getItem("user"));
-    AuthService.getPermission(user.userInfo).then((result) => {
-      if (result && result.data) {
-        let listPermissionClone = [...result.data.data];
-        me.listPermissionInModule = listPermissionClone.find(
-          (x) => x.modulecode == "Order"
-        ).permission;
-      }
-    });
   },
 
   methods: {
+    closeAddProductPopup() {
+      this.$$emit("close");
+    },
     /**
      * Tim kiem theo ma va ten vai tro
      * @param {} data
@@ -202,16 +197,16 @@ export default {
     },
     getDefaultData() {
       const me = this;
-      OrderService.getPagingData({
+      ProductService.getPagingData({
         PageIndex: me.pageIndex,
         PageSize: me.pageSize,
-        TableName: "Order",
+        TableName: "Product",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
         ListOrderBy: [],
       }).then((result) => {
         if (result && result.data) {
-          me.orderList = result.data.listPaging;
+          me.productList = result.data.listPaging;
           me.totalPage = result.data.total;
           let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
           me.pageShow =
@@ -222,10 +217,10 @@ export default {
     /**
      * mở form view
      */
-    openViewForm(order) {
+    openViewForm(product) {
       this.$router.push({
-        name: "m-order-detail",
-        params: { id: order["idorder"], formMode: 3 },
+        name: "m-product-detail",
+        params: { id: product["idproduct"], formMode: 3 },
       });
     },
     /**
@@ -236,7 +231,7 @@ export default {
       // this.popupMode = FormMode.Add;
       // this.isShowPopup = true;
       this.$router.push({
-        name: "m-order-detail",
+        name: "m-product-detail",
         params: { id: 0, formMode: 1 },
         query: { mode: FormMode.Add },
       });
@@ -248,11 +243,11 @@ export default {
     deleteData() {
       const me = this;
       let listID = this.selected.map((x) => x.idproduct).join(",");
-      OrderService.deleteMultiple({ ListID: listID }).then((result) => {
+      ProductService.deleteMultiple({ ListID: listID }).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
             this.selected = [];
-            me.$toast.success("Xóa đơn hàng thành công!");
+            me.$toast.success("Xóa hàng hóa thành công!");
             this.getDefaultData();
           } else {
             me.$toast.error(result.data.errorMessage);
@@ -295,4 +290,5 @@ export default {
 </script><style lang="sass" scoped>
 @import url('../../../css/management/m-branch.css')
 </style>
+  
   

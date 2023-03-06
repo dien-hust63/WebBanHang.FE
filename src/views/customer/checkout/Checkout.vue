@@ -6,7 +6,7 @@
           class="d-block text-center mx-auto mt-4 mb-10"
           size="120"
         >
-          <v-img src="https://nvdien.blob.core.windows.net/images/360formen.png"></v-img>
+          <v-img src="https://nvdien1.blob.core.windows.net/image/360formen.png"></v-img>
         </v-avatar>
       </div>
       <div class="checkout-user-deliver">
@@ -140,11 +140,11 @@
 
               <v-radio-group v-model="radios">
                 <v-radio
-                  label="	Thanh toán qua thẻ thanh toán, ứng dụng ngân hàng VNPAY"
+                  label="Thanh toán qua VNPAY"
                   :value="1"
                 ></v-radio>
                 <v-radio
-                  label="Thanh toán khi nhận hàng (COD)"
+                  label="Thanh toán khi nhận hàng"
                   :value="2"
                 ></v-radio>
               </v-radio-group>

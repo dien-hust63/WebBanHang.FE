@@ -16,11 +16,11 @@ const routes = [
   //   // lazy-loaded
   //   component: () => import("../views/test/Home.vue")
   // },
-  {
-    path: '/login',
-    // lazy-loaded
-    component: () => import('../views/management/login/Login.vue')
-  },
+  // {
+  //   path: '/login',
+  //   // lazy-loaded
+  //   component: () => import('../views/management/login/Login.vue')
+  // },
   {
     path: '/register',
     // lazy-loaded
@@ -36,18 +36,18 @@ const router = new VueRouter({
   routes
 })
 
-// router.beforeEach((to, from, next) => {
-//   const publicPages = ['/login', '/register', '/home'];
-//   const authRequired = !publicPages.includes(to.path);
-//   const loggedIn = localStorage.getItem('user');
+router.beforeEach((to, from, next) => {
+  // const publicPages = ['/login', '/register', '/home'];
+  // const authRequired = !publicPages.includes(to.path);
+  const loggedIn = localStorage.getItem('user');
 
-//   // trying to access a restricted page + not logged in
-//   // redirect to login page
-//   if (authRequired && !loggedIn) {
-//     next('/login');
-//   } else {
-//     next();
-//   }
-// });
+  // trying to access a restricted page + not logged in
+  // redirect to login page
+  if (!loggedIn && to.path !== '/management/login') {
+    next('/management/login');
+  } else {
+    next();
+  }
+});
 
 export default router

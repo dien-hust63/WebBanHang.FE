@@ -14,17 +14,17 @@ export default {
     return {
       items: [
         {
-          src: "https://nvdien.blob.core.windows.net/images/banner-web.jpg",
+          src: "https://nvdien1.blob.core.windows.net/image/banner-web.jpg",
         },
         {
-          src: "https://nvdien.blob.core.windows.net/images/Banner-web-2.jpg",
+          src: "https://nvdien1.blob.core.windows.net/image/Banner-web-2.jpg",
         },
         {
-          src: "https://nvdien.blob.core.windows.net/images/banner-web3.jpg",
+          src: "https://nvdien1.blob.core.windows.net/image/banner-web3.jpg",
         },
       ],
       product: {
-        mainimage: "https://nvdien.blob.core.windows.net/images/test.jpg",
+        mainimage: "https://nvdien1.blob.core.windows.net/image/test.jpg",
         productname: "Áo khoác nam AKHTK305",
         sellprice: "949.000",
       },

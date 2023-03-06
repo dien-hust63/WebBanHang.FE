@@ -3,7 +3,7 @@
     <div class="c-nav-header">
       <div class="c-nav-header-left">
         <v-img
-          src="https://nvdien.blob.core.windows.net/images/360formen.png"
+          src="https://nvdien1.blob.core.windows.net/image/360formen.png"
           @click="returnHomePage"
         ></v-img>
       </div>

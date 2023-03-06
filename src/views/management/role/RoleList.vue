@@ -10,6 +10,7 @@
       deleteBtn="Xóa vai trò"
       searchTitle="Tìm kiếm theo mã, tên vai trò"
       @onSearch="searchRoles"
+      :listPermission="listPermissionInModule"
     />
     <div class="bk-list-body">
       <v-data-table
@@ -114,6 +115,7 @@ import { FactoryService } from "../../../service/factory/factory.service";
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
 const RoleService = FactoryService.get("roleService");
+const AuthService = FactoryService.get("authService");
 export default {
   name: "RoleList",
   components: {
@@ -121,6 +123,7 @@ export default {
   },
   data() {
     return {
+      listPermissionInModule: "",
       isShowDelete: false,
       validForm: true,
       rules: {
@@ -184,6 +187,16 @@ export default {
 
   created() {
     this.getDefaultData();
+    const me = this;
+    let user = JSON.parse(localStorage.getItem("user"));
+    AuthService.getPermission(user.userInfo).then((result) => {
+      if (result && result.data) {
+        let listPermissionClone = [...result.data.data];
+        me.listPermissionInModule = listPermissionClone.find(
+          (x) => x.modulecode == "SettingRole"
+        ).permission;
+      }
+    });
   },
 
   methods: {
@@ -320,7 +333,6 @@ export default {
      * Kiểm tra dữ liệu trước khi lưu
      */
     validateBeforeSave(dataSave) {
-      debugger; // eslint-disable-line no-debugger
       this.$refs.form.validate();
       if (
         !this.validForm ||

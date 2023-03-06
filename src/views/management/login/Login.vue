@@ -3,7 +3,7 @@
     <div class="login-card">
       <img
         id="profile-img"
-        src="https://nvdien.blob.core.windows.net/images/360formen.png"
+        src="https://nvdien1.blob.core.windows.net/image/360formen.png"
         class="profile-img-card"
       />
       <v-form
@@ -77,7 +77,7 @@ export default {
       if (response) {
         if (response.data) {
           localStorage.setItem("user", JSON.stringify(response.data));
-          this.$router.push({ path: "/management" });
+          this.$router.push({ name: "m-report" });
         } else {
           this.$toast.open({
             message: response.errorMessage,
@@ -111,7 +111,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url("https://nvdien.blob.core.windows.net/images/loginbg.jpg");
+  background-image: url("https://nvdien1.blob.core.windows.net/image/loginbg.jpg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;

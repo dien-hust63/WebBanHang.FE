@@ -23,6 +23,12 @@ class AuthService {
       password: user.password
     });
   }
+
+  getPermission(user) {
+    return axios.post(API_URL + 'getPermission', {
+      email: user.email,
+    });
+  }
 }
 
 export default new AuthService();

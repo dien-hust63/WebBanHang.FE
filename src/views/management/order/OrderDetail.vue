@@ -158,7 +158,7 @@
                   <v-text-field
                     label="Tổng tiền"
                     :disabled="true"
-                    v-model="currentData.totalprice"
+                    v-model="totalPrice"
                   ></v-text-field>
                 </v-col>
 
@@ -343,8 +343,8 @@
           <tr class="bkc-table-cart-header">
             <th>Tên</th>
             <th>Mã hàng</th>
-            <th>Kích thước</th>
             <th>Màu sắc</th>
+            <th>Kích thước</th>
             <th>Giá bán</th>
             <th>Số lượng</th>
             <th>Thành tiền</th>
@@ -359,28 +359,30 @@
               {{item.productname}}
             </td>
             <td class="bkc-table-cart-cell">{{item.productcode}}</td>
-            <td class="bkc-table-cart-cell">
-              <v-text-field
-                variant="underlined"
-                v-model="item.costprice"
-                type="number"
-                :disabled="isViewMode"
-              ></v-text-field>
-            </td>
+            <td class="bkc-table-cart-cell">{{item.color}}</td>
+            <td class="bkc-table-cart-cell">{{item.size}}</td>
             <td class="bkc-table-cart-cell">
               <v-text-field
                 variant="underlined"
                 v-model="item.sellprice"
                 type="number"
+                :disabled="true"
+              ></v-text-field>
+            </td>
+            <td class="bkc-table-cart-cell">
+              <v-text-field
+                variant="underlined"
+                v-model="item.quantity"
+                type="number"
                 :disabled="isViewMode"
               ></v-text-field>
             </td>
             <td class="bkc-table-cart-cell">
               <v-text-field
                 variant="underlined"
-                v-model="item.inventory"
+                :value="item.sellprice * item.quantity"
                 type="number"
-                :disabled="isViewMode"
+                :disabled="true"
               ></v-text-field>
             </td>
             <td>
@@ -399,7 +401,10 @@
           :disabled="isViewMode"
         >Thêm hàng hóa</v-btn>
       </div>
-      <div class="bk-order-deliver-info">
+      <div
+        class="bk-order-deliver-info"
+        v-show="selectedOrderType.id == 2"
+      >
         <div class="title mt-4">Thông tin giao hàng</div>
         <v-card-text>
           <v-form
@@ -432,6 +437,7 @@
     <ProductPopup
       :isShowPopup="isShowProductPopup"
       @close="closeProductPopup"
+      @addProductToOrder="addProductToOrder"
     />
   </div>
 </template>
@@ -441,13 +447,16 @@ import FormMode from "../../../enum/FormModeEnum";
 import AccountStatus from "../../../enum/AccountStatusEnum";
 import { FactoryService } from "../../../service/factory/factory.service";
 import { AZURE_STORAGE_BASE_URL } from "../../../config/config.dev.json";
+import moment from "moment";
 import ProductPopup from "../product/ProductPopup.vue";
 const ProductService = FactoryService.get("productService");
+const OrderService = FactoryService.get("orderService");
 const BranchService = FactoryService.get("branchService");
 const LocationService = FactoryService.get("locationService");
 const DeliverService = FactoryService.get("deliverService");
 const ProductCategoryService = FactoryService.get("productcategoryService");
 const AuthService = FactoryService.get("authService");
+
 export default {
   name: "OrderDetail",
   components: { ProductPopup },
@@ -567,6 +576,7 @@ export default {
     if (this.$route.query.mode) {
       this.formMode = parseInt(this.$route.query.mode) ?? FormMode.Vỉew;
     }
+    this.currentData.orderdate = moment().format("yyyy-MM-DD");
     //this.getAllBranch();
     this.getAllProductCategory();
     this.getDetailInfo();
@@ -581,8 +591,37 @@ export default {
         ).permission;
       }
     });
+
+    this.currentData["receiveemployeename"] =
+      this.$store.state.auth.user.userInfo.username;
+    this.currentData["branchname"] =
+      this.$store.state.auth.user.userInfo.branchname;
   },
   methods: {
+    addProductToOrder(listSelectedProduct) {
+      const me = this;
+      this.isShowProductPopup = false;
+
+      listSelectedProduct.forEach((element) => {
+        debugger; // eslint-disable-line no-debugger
+
+        if (
+          me.listProductDetail.findIndex(
+            (x) => x.productcode == element.productcode
+          ) == -1
+        ) {
+          me.listProductDetail.push({
+            idproductdetail: element.idproductdetail,
+            size: element.size,
+            color: element.color,
+            sellprice: element.sellprice,
+            quantity: 1,
+            productcode: element.productcode,
+            productname: element.productname,
+          });
+        }
+      });
+    },
     /**
      * Lấy danh sách các tỉnh
      */
@@ -814,7 +853,7 @@ export default {
      * Làm chuẩn dữ liệu trước khi lưu
      */
     prepareDataBeforeSave() {
-      let listFieldToInt = ["costprice", "sellprice", "inventory"];
+      let listFieldToInt = ["costprice", "sellprice", "inventory", "quantity"];
       listFieldToInt.forEach((element) => {
         if (this.currentData[element] && this.currentData[element] != "") {
           this.currentData[element] = parseInt(this.currentData[element]);
@@ -825,16 +864,6 @@ export default {
           }
         });
       });
-      let listColorSelectedClone = [...this.listColorSelected];
-      if (this.listImageInColor.length > 0) {
-        listColorSelectedClone.forEach((element) => {
-          element["image"] = this.listImageInColor.find(
-            (x) => x.color == element.color
-          )?.image;
-        });
-      }
-      this.currentData["color"] = JSON.stringify(listColorSelectedClone);
-      this.currentData["size"] = JSON.stringify(this.listSizeSelected);
     },
     /**
      * thay đổi image chính
@@ -872,26 +901,21 @@ export default {
      * thêm mới hàng hóa
      */
     insertData() {
-      let productParam = new FormData();
-      productParam.append("product", JSON.stringify(this.currentData));
-      productParam.append(
-        "productdetail",
-        JSON.stringify(this.listProductDetail)
-      );
-      for (let i = 0; i < this.listFiles.length; i++) {
-        productParam.append("file", this.listFiles[i], this.listFiles[i].name);
-      }
+      let productParam = {
+        order: JSON.stringify(this.currentData),
+        orderdetail: JSON.stringify(this.listProductDetail),
+      };
       const me = this;
-      ProductService.insertProductDetail(productParam).then((result) => {
+      OrderService.insertOrderDetail(productParam).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Thêm mới hàng hóa thành công!");
+            me.$toast.success("Thêm mới đơn hàng thành công!");
             me.formMode = FormMode.View;
             me.listSizeSelected = JSON.parse(result.data.data.size);
             me.listColorSelected = JSON.parse(result.data.data.color);
             this.$router.push({
-              name: "m-product-detail",
-              params: { id: result.data.data["idproduct"], formMode: 3 },
+              name: "m-order-detail",
+              params: { id: result.data.data["idorder"], formMode: 3 },
             });
           } else {
             me.$toast.error(result.data.errorMessage);
@@ -1002,6 +1026,15 @@ export default {
     },
   },
   computed: {
+    totalPrice() {
+      let total = 0;
+      this.listProductDetail.forEach((x) => {
+        if (x && x["sellprice"] && x["sellprice"] != "") {
+          total += parseInt(x["sellprice"]) * parseInt(x["quantity"]);
+        }
+      });
+      return total;
+    },
     totalInventory() {
       let total = 0;
       this.listProductDetail.forEach((x) => {

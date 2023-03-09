@@ -1,25 +1,27 @@
 <template>
   <div class="bk-product-popup">
-    <!-- <base-popup
+    <base-popup
       :isShowPopup="isShowPopup"
       @closePopup="closeAddProductPopup"
-      maxwidth="760px"
+      maxwidth="1000px"
       :title="titlePopup"
       @saveData="addProductToOrder"
     >
-      <div class="bk-product-list bk-list">
+      <div class="bk-product-popup-list bk-list">
         <MHeader
           :title="title"
           :subtitle="subtitle"
-          addBtn='Thêm hàng hóa'
           @openAddForm="openAddForm"
+          :isHideAddBtn="true"
           @deleteData="deleteData"
-          :isShowDelete="isShowDelete"
+          :isShowDelete="false"
           deleteBtn="Xóa hàng hóa"
           searchTitle="Tìm kiếm theo mã, tên hàng hóa"
           @onSearch="searchData"
+          :isShowBranch="true"
+          @changeBranch="changeBranchHeader"
         />
-        <div class="bk-list-body">
+        <div class="bk-product-popup-body">
           <v-data-table
             v-model="selected"
             :headers="headers"
@@ -33,7 +35,7 @@
           >
           </v-data-table>
         </div>
-        <div class="bk-list-footer bk-flex bk-flex-between">
+        <!-- <div class="bk-flex bk-flex-between">
           <v-row
             no-gutters
             style="height: 60px;"
@@ -68,16 +70,15 @@
               </v-row>
             </v-col>
           </v-row>
-        </div>
+        </div> -->
       </div>
 
-    </base-popup> -->
-    ok
+    </base-popup>
   </div>
 </template>
 <script>
-//import MHeader from "../../../components/management/header/MHeader.vue";
-
+import MHeader from "../../../components/management/header/MHeader.vue";
+import BasePopup from "../../../components/common/BasePopup.vue";
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
 import { FactoryService } from "../../../service/factory/factory.service";
@@ -85,7 +86,8 @@ const ProductService = FactoryService.get("productService");
 export default {
   name: "ProductPopup",
   components: {
-    //MHeader,
+    MHeader,
+    BasePopup,
   },
   data() {
     return {
@@ -99,7 +101,7 @@ export default {
           (v) => /.+@.+\..+/.test(v) || "E-mail không hợp lệ.",
         ],
       },
-      titlePopup: "Thêm chi nhánh",
+      titlePopup: "",
       popupMode: FormMode.Add,
       addEmployee: {},
       maxPageShow: 7,
@@ -107,8 +109,8 @@ export default {
       pageSize: 10,
       pageIndex: 1,
       totalPage: 0,
-      title: "Hàng hóa",
-      subtitle: "Danh sách các hàng hóa",
+      title: "Danh sách các hàng hóa",
+      subtitle: "",
       selected: [],
       headers: [
         {
@@ -130,12 +132,12 @@ export default {
           value: "productname",
         },
         {
-          text: "Nhóm hàng hóa",
+          text: "Màu sắc",
           align: "start",
           sortable: false,
-          value: "categoryname",
+          value: "color",
         },
-        { text: "Giá vốn", value: "costprice" },
+        { text: "Kích thước", value: "size" },
         { text: "Giá bán", value: "sellprice" },
         { text: "Tồn kho", value: "inventory" },
       ],
@@ -157,6 +159,7 @@ export default {
       listFilter: [],
       filterFormula: "",
       listBranch: [],
+      currentBranch: null,
     };
   },
   props: {
@@ -167,8 +170,33 @@ export default {
   },
 
   methods: {
+    changeBranchHeader(branch) {
+      this.currentBranch = branch;
+      this.listFilter = [
+        {
+          FieldName: "productcode",
+          Operator: Operator.Like,
+          FilterValue: this.currentSearch,
+        },
+        {
+          FieldName: "productname",
+          Operator: Operator.Like,
+          FilterValue: this.currentSearch,
+        },
+        {
+          FieldName: "branchid",
+          Operator: Operator.Equal,
+          FilterValue: branch?.id.toString() ?? "0",
+        },
+      ];
+      this.filterFormula = "({0} OR {1}) AND {2}";
+      this.getDefaultData();
+    },
+    addProductToOrder() {
+      this.$emit("addProductToOrder", this.selected);
+    },
     closeAddProductPopup() {
-      this.$$emit("close");
+      this.$emit("close");
     },
     /**
      * Tim kiem theo ma va ten vai tro
@@ -186,6 +214,11 @@ export default {
           Operator: Operator.Like,
           FilterValue: data,
         },
+        {
+          FieldName: "branchid",
+          Operator: Operator.Equal,
+          FilterValue: this.currentBranch?.id.toString() ?? "0",
+        },
       ];
       this.filterFormula = "{0} OR {1}";
       this.getDefaultData();
@@ -193,24 +226,20 @@ export default {
     dblclickRow(e, rowData) {
       let selectedProduct = rowData.item;
       if (this.isShowDelete) return;
+
       this.openViewForm(selectedProduct);
     },
     getDefaultData() {
       const me = this;
-      ProductService.getPagingData({
-        PageIndex: me.pageIndex,
-        PageSize: me.pageSize,
-        TableName: "Product",
-        ListFilter: me.listFilter,
-        FilterFormula: me.filterFormula,
-        ListOrderBy: [],
-      }).then((result) => {
+      ProductService.getProductDetailByBranch(
+        this.$store.state.auth.user.userInfo.branchid
+      ).then((result) => {
         if (result && result.data) {
-          me.productList = result.data.listPaging;
-          me.totalPage = result.data.total;
-          let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
-          me.pageShow =
-            currentPageShow < me.maxPageShow ? currentPageShow : me.maxPageShow;
+          me.productList = result.data.data;
+          //   me.totalPage = result.data.total;
+          //   let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
+          //   me.pageShow =
+          //     currentPageShow < me.maxPageShow ? currentPageShow : me.maxPageShow;
         }
       });
     },
@@ -288,7 +317,7 @@ export default {
   },
 };
 </script><style lang="sass" scoped>
-@import url('../../../css/management/m-branch.css')
+@import url('../../../css/management/m-productpopup.css')
 </style>
   
   

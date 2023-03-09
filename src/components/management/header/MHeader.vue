@@ -73,6 +73,7 @@
         </v-dialog>
         <v-btn
           color="primary"
+          v-show="!isHideAddBtn"
           @click="openAddForm()"
         >
           <v-icon left>
@@ -107,6 +108,7 @@ export default {
     searchTitle: String,
     isShowBranch: Boolean,
     listPermission: String,
+    isHideAddBtn: Boolean,
   },
   created() {
     const me = this;
@@ -132,6 +134,7 @@ export default {
     },
     openAddForm() {
       if (
+        this.listPermission &&
         !this.listPermission.includes("Add") &&
         !this.listPermission.includes("All")
       ) {
@@ -142,6 +145,7 @@ export default {
     },
     deleteData() {
       if (
+        this.listPermission &&
         !this.listPermission.includes("Delete") &&
         !this.listPermission.includes("All")
       ) {

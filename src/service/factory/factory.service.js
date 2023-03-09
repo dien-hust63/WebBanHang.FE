@@ -9,6 +9,7 @@ import ModuleService from '../module.service';
 import AzureService from '../azure.service';
 import PaymentService from "../payment.service"
 import AuthService from "../auth.service"
+import OrderService from '../order.service';
 const serviceList = {
     branchService: BranchService,
     roleService: RoleService,
@@ -21,6 +22,7 @@ const serviceList = {
     azureService:AzureService,
     paymentService:PaymentService,
     authService:AuthService,
+    orderService:OrderService,
 }
 export const FactoryService = {
     get: name => serviceList[name]

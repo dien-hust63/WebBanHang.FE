@@ -82,10 +82,7 @@ export default {
   data() {
     return {
       currentSearch: "",
-      currentBranch: {
-        id: "0",
-        text: "",
-      },
+      currentBranch: null,
       listPermissionInModule: "",
       isShowDelete: false,
       validForm: true,
@@ -252,7 +249,12 @@ export default {
     openViewForm(product) {
       this.$router.push({
         name: "m-product-detail",
-        params: { id: product["idproduct"], formMode: 3 },
+        params: {
+          id: product["idproduct"],
+          formMode: 3,
+          branchid: this.currentBranch?.id,
+          branchname: this.currentBranch?.text,
+        },
       });
     },
     /**
@@ -264,7 +266,12 @@ export default {
       // this.isShowPopup = true;
       this.$router.push({
         name: "m-product-detail",
-        params: { id: 0, formMode: 1 },
+        params: {
+          id: 0,
+          formMode: 1,
+          branchid: this.currentBranch?.id,
+          branchname: this.currentBranch?.text,
+        },
         query: { mode: FormMode.Add },
       });
     },

@@ -385,13 +385,18 @@ export default {
       selectedColor: "",
       listFiles: [],
       listPermissionInModule: "",
+      workingbranchid: 0,
+      workingbranchname: "",
     };
   },
   created() {
     this.formMode = this.$route.params.formMode;
+    this.currentData["branchid"] = this.$route.params.branchid;
+    this.currentData["branchname"] = this.$route.params.branchname;
     if (this.$route.query.mode) {
       this.formMode = parseInt(this.$route.query.mode) ?? FormMode.Vỉew;
     }
+
     //this.getAllBranch();
     this.getAllProductCategory();
     this.getDetailInfo();

@@ -9,5 +9,20 @@ class OrderService extends BaseService{
     return axios
       .post(`${this.apiURL}/${this.controller}/insertOrderDetail`, param);
   }
+
+  getOrderDetail(id){
+    return axios
+      .get(`${this.apiURL}/${this.controller}/getOrderDetail/${id}`);
+  }
+
+  updateOrderDetail(param){
+    return axios
+      .post(`${this.apiURL}/${this.controller}/updateOrderDetail`,param);
+  }
+
+  getOrderCodeAuto(){
+    return axios
+      .get(`${this.apiURL}/${this.controller}/getOrderCodeAuto`);
+  }
 }
 export default new OrderService();

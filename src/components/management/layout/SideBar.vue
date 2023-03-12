@@ -17,7 +17,7 @@
           >
             <v-img src="https://nvdien1.blob.core.windows.net/image/360formen.png"></v-img>
           </v-avatar>
-          <h6>{{ $store.state.auth.user.userInfo.username}} ( {{ $store.state.auth.user.userInfo.usercode}} )</h6>
+          <h6>{{ userInfo.username}} ( {{ userInfo.usercode}} )</h6>
         </v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
@@ -142,11 +142,13 @@ export default {
     ],
     listBranch: [],
     listPermission: [],
+    userInfo: null,
   }),
   created() {
     const me = this;
     this.getModulePermission();
     let user = JSON.parse(localStorage.getItem("user"));
+    this.userInfo = user.userInfo;
     AuthService.getPermission(user.userInfo).then((result) => {
       if (result && result.data) {
         me.listPermission = [...result.data.data];

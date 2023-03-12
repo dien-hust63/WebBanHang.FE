@@ -182,6 +182,15 @@ export default {
       this.chosenproduct["size"] = item;
     },
     addProductToCart() {
+      let productDetail = this.listProductDetail.find(
+        (x) =>
+          x.idproduct == this.chosenproduct.idproduct &&
+          x.size == this.chosenproduct.size &&
+          x.color == this.chosenproduct.color
+      );
+      this.chosenproduct["idproductdetail"] = productDetail.idproductdetail;
+      this.chosenproduct["productcode"] = productDetail.productcode;
+      this.chosenproduct["productnamedetail"] = productDetail.productname;
       this.$store.commit("cart/addProductToCart", this.chosenproduct);
     },
   },

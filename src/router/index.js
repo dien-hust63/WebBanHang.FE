@@ -43,7 +43,7 @@ router.beforeEach((to, from, next) => {
 
   // trying to access a restricted page + not logged in
   // redirect to login page
-  if (!loggedIn && to.path !== '/management/login') {
+  if (!loggedIn && to.path !== '/management/login' && to.path.includes("management")) {
     next('/management/login');
   } else {
     next();

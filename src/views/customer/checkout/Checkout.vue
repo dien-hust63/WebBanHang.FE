@@ -230,11 +230,32 @@ const LocationService = FactoryService.get("locationService");
 const DeliverService = FactoryService.get("deliverService");
 const BranchService = FactoryService.get("branchService");
 const PaymentService = FactoryService.get("paymentService");
+const OrderService = FactoryService.get("orderService");
+import moment from "moment";
 export default {
   name: "CCheckout",
   created() {
     this.getAllProvince();
     this.getAllBranch();
+    this.listOrderDetail = this.$store.state.cart.cartList;
+    let customerCheckoutInfo = sessionStorage.getItem("customerCheckoutInfo");
+    if (customerCheckoutInfo) {
+      this.customerInfo = JSON.parse(customerCheckoutInfo);
+      this.deliverPrice = this.customerInfo["deliverprice"];
+      this.selectedProvince = {
+        id: this.customerInfo["provinceid"],
+        text: this.customerInfo["provincename"],
+      };
+      this.selectedDistrict = {
+        id: this.customerInfo["districtid"],
+        text: this.customerInfo["districtname"],
+      };
+      this.selectedWard = {
+        id: this.customerInfo["wardid"],
+        text: this.customerInfo["wardname"],
+      };
+      this.radios = this.customerInfo["checkouttypeid"];
+    }
   },
   data() {
     return {
@@ -263,6 +284,7 @@ export default {
       validForm: true,
       deliverPrice: null,
       defaultBranch: null,
+      listOrderDetail: [],
     };
   },
   methods: {
@@ -299,27 +321,64 @@ export default {
      */
     handleOrder() {
       const me = this;
+      this.prepareBeforeHandle();
       // Lưu vào db đơn hàng ở trạng thái chờ tiếp nhận, với trạng thái thanh toán: Chưa thanh toán
       sessionStorage.setItem(
         "customerCheckoutInfo",
         JSON.stringify(this.customerInfo)
       );
-      if (me.radios == 1) {
-        // thanh toán qua vnpay
-        let param = {
-          Amount: me.totalPrice,
-        };
-        PaymentService.getVNPayLink(param)
-          .then((result) => {
-            if (result && result.data) {
-              let vnpayUrl = result.data.data;
-              window.location.href = vnpayUrl;
+      let orderParam = {
+        order: JSON.stringify(this.customerInfo),
+        orderdetail: JSON.stringify(this.listOrderDetail),
+      };
+      OrderService.insertOrderDetail(orderParam).then((result) => {
+        if (result && result.data) {
+          if (result.data.success) {
+            if (me.radios == 1) {
+              // thanh toán qua vnpay
+              let param = {
+                Amount: me.totalPrice,
+              };
+
+              PaymentService.getVNPayLink(param)
+                .then((result) => {
+                  if (result && result.data) {
+                    let vnpayUrl = result.data.data;
+                    window.location.href = vnpayUrl;
+                  }
+                })
+                .catch((e) => {
+                  console.log(e);
+                });
             }
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      }
+          } else {
+            me.$toast.error(result.data.errorMessage);
+          }
+        }
+      });
+    },
+
+    /**\
+     * Chuẩn bị dữ liệu trước khi đặt hàng
+     */
+    prepareBeforeHandle() {
+      this.customerInfo["checkoutstatusid"] = 2; // chưa thanh toán
+      this.customerInfo["ordertypeid"] = 2; // Mua online
+      this.customerInfo["statusid"] = 2; // chờ tiếp nhận
+      this.customerInfo["orderdate"] = moment().format("yyyy-MM-DD");
+      this.customerInfo["totalprice"] = this.totalPrice;
+      this.customerInfo["branchid"] = this.defaultBranch.idbranch;
+      this.customerInfo["branchname"] = this.defaultBranch.branchname;
+      // Xử lý danh sách các hàng hóa mua
+      this.listOrderDetail = this.listOrderDetail.map((x) => ({
+        idproductdetail: x.idproductdetail,
+        quantity: x.quantity,
+        size: x.size,
+        color: x.color,
+        sellprice: x.sellprice,
+        productcode: x.productcode,
+        productname: x.productnamedetail,
+      }));
     },
     /**
      * Lấy danh sách các tỉnh
@@ -370,6 +429,8 @@ export default {
     changeWard(ward) {
       if (ward && this.selectedProvince && this.selectedDistrict) {
         const me = this;
+        me.customerInfo["wardid"] = ward.id;
+        me.customerInfo["wardname"] = ward.text;
         let param = {
           from_district_id: this.defaultBranch.districtid,
           service_type_id: 2,
@@ -387,6 +448,7 @@ export default {
           .then((result) => {
             if (result) {
               me.deliverPrice = result.data.data.service_fee;
+              me.customerInfo["deliverprice"] = me.deliverPrice;
             }
           })
           .catch((e) => {
@@ -398,6 +460,8 @@ export default {
     },
     changeProvince(province) {
       const me = this;
+      me.customerInfo["provinceid"] = province.id;
+      me.customerInfo["provincename"] = province.text;
       me.selectedDistrict = null;
       me.selectedWard = null;
       me.deliverPrice = null;
@@ -417,6 +481,8 @@ export default {
     },
     changeDistrict(district) {
       const me = this;
+      me.customerInfo["districtid"] = district.id;
+      me.customerInfo["districtname"] = district.text;
       me.selectedWard = null;
       me.deliverPrice = null;
       LocationService.getWardByDistrict(district.id)
@@ -451,6 +517,11 @@ export default {
       } else {
         return tempTotal;
       }
+    },
+  },
+  watch: {
+    radios(val) {
+      this.customerInfo["checkouttypeid"] = val;
     },
   },
 };

@@ -44,11 +44,11 @@
         <div>Sản phẩm</div>
 
       </div>
-      <div
+      <!-- <div
         class="c-nav-tab-item"
         @click="showListBranch"
         @mouseover="isShowProductTab = false"
-      >Hệ thống cửa hàng</div>
+      >Hệ thống cửa hàng</div> -->
       <v-expand-transition>
         <div
           class="c-nav-product-category"

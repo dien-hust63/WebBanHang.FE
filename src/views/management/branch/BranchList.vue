@@ -168,7 +168,7 @@
                 sm="6"
               >
                 <v-checkbox
-                  label="Sử dụng làm địa chỉ mặc định tính giá vận chuyển online"
+                  label="Là chi nhánh online"
                   v-model="addBranch.isaddressdefault"
                 ></v-checkbox>
                 <!-- <v-combobox

@@ -19,6 +19,12 @@
     </div>
 
     <script>
+      let url = location.href;
+      var fbroot = document.getElementById('fb-root');
+
+      if(url.includes("management")){
+        fbroot.style.display = 'none';
+      }
       var chatbox = document.getElementById('fb-customer-chat');
       chatbox.setAttribute("page_id", "111186121879765");
       chatbox.setAttribute("attribution", "biz_inbox");

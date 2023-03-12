@@ -8,11 +8,13 @@
       @deleteData="deleteData"
       :isShowDelete="isShowDelete"
       deleteBtn="Xóa đơn hàng"
-      searchTitle="Tìm kiếm theo mã, tên đơn hàng"
+      searchTitle="Tìm kiếm theo mã đơn hàng, tên khách hàng"
       @onSearch="searchData"
       :isShowBranch="true"
       :listPermission="listPermissionInModule"
+      @changeBranch="changeBranchHeader"
     />
+
     <div class="bk-list-body">
       <v-data-table
         v-model="selected"
@@ -71,7 +73,7 @@ import MHeader from "../../../components/management/header/MHeader.vue";
 import FormMode from "../../../enum/FormModeEnum";
 import Operator from "../../../enum/OperatorEnum";
 import { FactoryService } from "../../../service/factory/factory.service";
-const OrderService = FactoryService.get("productService");
+const OrderService = FactoryService.get("orderService");
 const AuthService = FactoryService.get("authService");
 export default {
   name: "OrderList",
@@ -108,13 +110,13 @@ export default {
           text: "Ngày mua hàng",
           align: "start",
           sortable: false,
-          value: "orderdate",
+          value: "orderdatetext",
         },
         {
           text: "ID đơn hàng",
           align: " d-none",
           sortable: false,
-          value: "idorder",
+          value: "idsaleorder",
         },
         {
           text: "Mã đơn hàng",
@@ -132,11 +134,11 @@ export default {
           text: "Tổng tiền",
           align: "start",
           sortable: false,
-          value: "customername",
+          value: "totalprice",
         },
         { text: "Trạng thái", value: "statusname" },
         { text: "Nhân viên tiếp nhận", value: "receiveemployeename" },
-        { text: "Hình thức mua hàng", value: "ordertype" },
+        { text: "Hình thức mua hàng", value: "ordertypename" },
         { text: "Chi nhánh", value: "branchname" },
       ],
       orderList: [],
@@ -157,13 +159,17 @@ export default {
       listFilter: [],
       filterFormula: "",
       listBranch: [],
+      currentSearch: "",
+      currentBranch: null,
+      currentUser: null,
     };
   },
 
   created() {
-    this.getDefaultData();
+    // this.getDefaultData();
     const me = this;
     let user = JSON.parse(localStorage.getItem("user"));
+    this.currentUser = user.userInfo;
     AuthService.getPermission(user.userInfo).then((result) => {
       if (result && result.data) {
         let listPermissionClone = [...result.data.data];
@@ -182,30 +188,40 @@ export default {
     searchData(data) {
       this.listFilter = [
         {
-          FieldName: "productcode",
+          FieldName: "ordercode",
           Operator: Operator.Like,
           FilterValue: data,
         },
         {
-          FieldName: "productname",
+          FieldName: "customername",
           Operator: Operator.Like,
           FilterValue: data,
         },
+        {
+          FieldName: "branchid",
+          Operator: Operator.Equal,
+          FilterValue: this.currentBranch?.id.toString() ?? "0",
+        },
+        {
+          FieldName: "receiveemployeeid",
+          Operator: Operator.Equal,
+          FilterValue: this.currentUser?.iduser.toString() ?? "0",
+        },
       ];
-      this.filterFormula = "{0} OR {1}";
+      this.filterFormula = "({0} OR {1}) AND ({2} OR {3})";
       this.getDefaultData();
     },
     dblclickRow(e, rowData) {
-      let selectedProduct = rowData.item;
+      let selectedData = rowData.item;
       if (this.isShowDelete) return;
-      this.openViewForm(selectedProduct);
+      this.openViewForm(selectedData);
     },
     getDefaultData() {
       const me = this;
       OrderService.getPagingData({
         PageIndex: me.pageIndex,
         PageSize: me.pageSize,
-        TableName: "Order",
+        TableName: "SaleOrder",
         ListFilter: me.listFilter,
         FilterFormula: me.filterFormula,
         ListOrderBy: [],
@@ -219,13 +235,46 @@ export default {
         }
       });
     },
+    changeBranchHeader(branch) {
+      this.currentBranch = branch;
+      this.listFilter = [
+        {
+          FieldName: "ordercode",
+          Operator: Operator.Like,
+          FilterValue: this.currentSearch,
+        },
+        {
+          FieldName: "customername",
+          Operator: Operator.Like,
+          FilterValue: this.currentSearch,
+        },
+        {
+          FieldName: "branchid",
+          Operator: Operator.Equal,
+          FilterValue: branch?.id.toString() ?? "0",
+        },
+
+        {
+          FieldName: "receiveemployeeid",
+          Operator: Operator.Equal,
+          FilterValue: this.currentUser?.iduser.toString() ?? "0",
+        },
+      ];
+      this.filterFormula = "({0} OR {1}) AND ({2} OR {3})";
+      this.getDefaultData();
+    },
     /**
      * mở form view
      */
     openViewForm(order) {
       this.$router.push({
         name: "m-order-detail",
-        params: { id: order["idorder"], formMode: 3 },
+        params: {
+          id: order["idsaleorder"],
+          formMode: 3,
+          branchid: this.currentBranch?.id,
+          branchname: this.currentBranch?.text,
+        },
       });
     },
     /**
@@ -237,7 +286,12 @@ export default {
       // this.isShowPopup = true;
       this.$router.push({
         name: "m-order-detail",
-        params: { id: 0, formMode: 1 },
+        params: {
+          id: 0,
+          formMode: 1,
+          branchid: this.currentBranch?.id,
+          branchname: this.currentBranch?.text,
+        },
         query: { mode: FormMode.Add },
       });
     },
@@ -247,7 +301,7 @@ export default {
      */
     deleteData() {
       const me = this;
-      let listID = this.selected.map((x) => x.idproduct).join(",");
+      let listID = this.selected.map((x) => x.idsaleorder).join(",");
       OrderService.deleteMultiple({ ListID: listID }).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
@@ -292,7 +346,7 @@ export default {
     },
   },
 };
-</script><style lang="sass" scoped>
-@import url('../../../css/management/m-branch.css')
+</script><style lang="css" scoped>
+@import url("../../../css/management/m-orderlist.css");
 </style>
   

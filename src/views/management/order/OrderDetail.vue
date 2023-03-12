@@ -18,6 +18,28 @@
 
       <v-spacer></v-spacer>
       <v-btn
+        v-show="selectedOrderStatus.id == 2"
+        color="success"
+        @click="receiveOrder"
+        class="ml-4"
+      >
+        <v-icon left>
+          mdi-pencil
+        </v-icon>
+        Tiếp nhận
+      </v-btn>
+      <v-btn
+        v-show="selectedOrderStatus.id == 3"
+        color="success"
+        @click="createOrderDeliver"
+        class="ml-4"
+      >
+        <v-icon left>
+          mdi-pencil
+        </v-icon>
+        Tạo đơn giao hàng
+      </v-btn>
+      <v-btn
         v-show="isViewMode"
         color="#F4F5F9"
         @click="openFormEdit"
@@ -59,7 +81,7 @@
                 >
                   <v-text-field
                     label="Mã đơn hàng (*)"
-                    :disabled="isViewMode"
+                    :disabled="true"
                     v-model="currentData.ordercode"
                     :rules="[rules.orderCodeRule]"
                   ></v-text-field>
@@ -445,11 +467,11 @@
 <script>
 import FormMode from "../../../enum/FormModeEnum";
 import AccountStatus from "../../../enum/AccountStatusEnum";
+import OrderStatus from "../../../enum/OrderStatusEnum";
 import { FactoryService } from "../../../service/factory/factory.service";
 import { AZURE_STORAGE_BASE_URL } from "../../../config/config.dev.json";
 import moment from "moment";
 import ProductPopup from "../product/ProductPopup.vue";
-const ProductService = FactoryService.get("productService");
 const OrderService = FactoryService.get("orderService");
 const BranchService = FactoryService.get("branchService");
 const LocationService = FactoryService.get("locationService");
@@ -569,20 +591,29 @@ export default {
         text: "Mua trực tiếp tại chi nhánh",
       },
       isShowPopup: false,
+      currentUser: null,
     };
   },
   created() {
+    const me = this;
     this.formMode = this.$route.params.formMode;
     if (this.$route.query.mode) {
       this.formMode = parseInt(this.$route.query.mode) ?? FormMode.Vỉew;
     }
+    if (this.formMode == FormMode.Add) {
+      OrderService.getOrderCodeAuto().then((result) => {
+        if (result && result.data) {
+          me.currentData["ordercode"] = result.data.data;
+        }
+      });
+    }
     this.currentData.orderdate = moment().format("yyyy-MM-DD");
     //this.getAllBranch();
-    this.getAllProductCategory();
+    // this.getAllProductCategory();
     this.getDetailInfo();
     this.getAllProvince();
-    const me = this;
     let user = JSON.parse(localStorage.getItem("user"));
+    this.currentUser = user.userInfo;
     AuthService.getPermission(user.userInfo).then((result) => {
       if (result && result.data) {
         let listPermissionClone = [...result.data.data];
@@ -592,10 +623,16 @@ export default {
       }
     });
 
-    this.currentData["receiveemployeename"] =
-      this.$store.state.auth.user.userInfo.username;
-    this.currentData["branchname"] =
-      this.$store.state.auth.user.userInfo.branchname;
+    this.currentData["receiveemployeename"] = this.currentUser.username;
+    this.currentData["receiveemployeeid"] = parseInt(this.currentUser.iduser);
+    this.currentData["branchid"] = this.$route.params.branchid
+      ? this.$route.params.branchid
+      : this.currentUser.branchid;
+    this.currentData["branchname"] = this.$route.params.branchname
+      ? this.$route.params.branchname
+      : this.currentUser.branchname;
+    this.currentData["ordertypeid"] = this.selectedOrderType.id;
+    this.currentData["ordertypename"] = this.selectedOrderType.text;
   },
   methods: {
     addProductToOrder(listSelectedProduct) {
@@ -603,8 +640,6 @@ export default {
       this.isShowProductPopup = false;
 
       listSelectedProduct.forEach((element) => {
-        debugger; // eslint-disable-line no-debugger
-
         if (
           me.listProductDetail.findIndex(
             (x) => x.productcode == element.productcode
@@ -729,6 +764,22 @@ export default {
       });
     },
     /**
+     * Tạo đơn giao hàng
+     */
+    createOrderDeliver() {},
+    /**
+     * tiếp nhận đơn hàng
+     */
+    receiveOrder() {
+      if (
+        !this.listPermissionInModule.includes("Receive") &&
+        !this.listPermissionInModule.includes("All")
+      ) {
+        this.$toast.error("Bạn không có quyền thực hiện tính năng này.");
+        return;
+      }
+    },
+    /**
      * Lấy danh sách toàn bộ chi nháh
      */
     getAllBranch() {
@@ -782,25 +833,47 @@ export default {
         return;
       }
       let id = this.$route.params.id;
-      ProductService.getProductDetail(id)
+      OrderService.getOrderDetail(id)
         .then((result) => {
           if (result && result.data) {
-            me.currentData = result.data.data.product;
-            me.selectedProductCategory = {
-              value: me.currentData["categoryid"],
-              text: me.currentData["categoryname"],
+            me.currentData = result.data.data.saleOrder;
+            // me.selectedProductCategory = {
+            //   value: me.currentData["categoryid"],
+            //   text: me.currentData["categoryname"],
+            // };
+            this.currentData.orderdate = moment(
+              me.currentData["orderdate"]
+            ).format("yyyy-MM-DD");
+            me.title = `${me.currentData.ordercode} - ${me.currentData.customername}`;
+            me.listProductDetail = [...result.data.data.orderDetail];
+            me.selectedOrderType = {
+              id: me.currentData["ordertypeid"],
+              text: me.currentData["ordertypename"],
             };
-            me.mainImageLink = me.currentData["image"];
-            me.listColorSelected = JSON.parse(me.currentData.color);
-            me.listSizeSelected = JSON.parse(me.currentData.size);
-            me.title = `${me.currentData.productcode} - ${me.currentData.productname}`;
-            me.listProductDetail = [...result.data.data.productDetail];
-            if (me.listProductDetail && me.listProductDetail.length > 0) {
-              me.isShowGroupInstance = true;
-            }
-            if (me.listSizeSelected || me.listColorSelected.length > 0) {
-              me.isShowGroupAttribute = true;
-            }
+            me.selectedOrderStatus = {
+              id: me.currentData["statusid"],
+              text: me.currentData["statusname"],
+            };
+            me.checkoutStatus = {
+              id: me.currentData["checkoutstatusid"],
+              text: me.currentData["checkoutstatusname"],
+            };
+            me.selectedCheckoutType = {
+              id: me.currentData["checkouttypeid"],
+              text: me.currentData["checkouttypename"],
+            };
+            me.selectedProvince = {
+              id: me.currentData["provinceid"],
+              text: me.currentData["provincename"],
+            };
+            me.selectedDistrict = {
+              id: me.currentData["districtid"],
+              text: me.currentData["districtname"],
+            };
+            me.selectedWard = {
+              id: me.currentData["wardid"],
+              text: me.currentData["wardname"],
+            };
           }
         })
         .catch((e) => {
@@ -864,6 +937,10 @@ export default {
           }
         });
       });
+      if (this.currentData["ordertypeid"] == 1) {
+        this.currentData["statusid"] = OrderStatus.Success;
+        // this.currentData["statusname"] = "Thành công";
+      }
     },
     /**
      * thay đổi image chính
@@ -901,21 +978,19 @@ export default {
      * thêm mới hàng hóa
      */
     insertData() {
-      let productParam = {
+      let orderParam = {
         order: JSON.stringify(this.currentData),
         orderdetail: JSON.stringify(this.listProductDetail),
       };
       const me = this;
-      OrderService.insertOrderDetail(productParam).then((result) => {
+      OrderService.insertOrderDetail(orderParam).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
             me.$toast.success("Thêm mới đơn hàng thành công!");
             me.formMode = FormMode.View;
-            me.listSizeSelected = JSON.parse(result.data.data.size);
-            me.listColorSelected = JSON.parse(result.data.data.color);
             this.$router.push({
               name: "m-order-detail",
-              params: { id: result.data.data["idorder"], formMode: 3 },
+              params: { id: result.data.data["idsaleorder"], formMode: 3 },
             });
           } else {
             me.$toast.error(result.data.errorMessage);
@@ -927,26 +1002,19 @@ export default {
      * sửa hàng hóa
      */
     updateData() {
-      let productParam = new FormData();
-      productParam.append("product", JSON.stringify(this.currentData));
-      productParam.append(
-        "productdetail",
-        JSON.stringify(this.listProductDetail)
-      );
-      for (let i = 0; i < this.listFiles.length; i++) {
-        productParam.append("file", this.listFiles[i], this.listFiles[i].name);
-      }
+      let orderParam = {
+        order: JSON.stringify(this.currentData),
+        orderdetail: JSON.stringify(this.listProductDetail),
+      };
       const me = this;
-      ProductService.updateProductDetail(productParam).then((result) => {
+      OrderService.updateOrderDetail(orderParam).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Sửa hàng hóa thành công!");
+            me.$toast.success("Cập nhật đơn hàng thành công!");
             me.formMode = FormMode.View;
-            me.listSizeSelected = JSON.parse(result.data.data.size);
-            me.listColorSelected = JSON.parse(result.data.data.color);
             this.$router.push({
-              name: "m-product-detail",
-              params: { id: result.data.data["idproduct"], formMode: 3 },
+              name: "m-order-detail",
+              params: { id: result.data.data["idsaleorder"], formMode: 3 },
             });
           } else {
             me.$toast.error(result.data.errorMessage);
@@ -973,7 +1041,7 @@ export default {
     selectedCheckoutType: {
       handler: function (val) {
         if (val) {
-          this.currentData["checkouttypeid"] = val["value"];
+          this.currentData["checkouttypeid"] = val["id"];
           this.currentData["checkouttypename"] = val["text"];
         }
       },
@@ -982,7 +1050,7 @@ export default {
     checkoutStatus: {
       handler: function (val) {
         if (val) {
-          this.currentData["checkoutstatusid"] = val["value"];
+          this.currentData["checkoutstatusid"] = val["id"];
           this.currentData["checkoutstatusname"] = val["text"];
         }
       },
@@ -1014,7 +1082,7 @@ export default {
     selectedOrderType: {
       handler: function (val) {
         if (val) {
-          this.currentData["ordertypeid"] = val["value"];
+          this.currentData["ordertypeid"] = val["id"];
           this.currentData["ordertypename"] = val["text"];
         }
       },
@@ -1023,6 +1091,9 @@ export default {
 
     totalInventory(val) {
       this.currentData["inventory"] = val;
+    },
+    totalPrice(val) {
+      this.currentData["totalprice"] = val;
     },
   },
   computed: {

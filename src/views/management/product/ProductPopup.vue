@@ -160,12 +160,15 @@ export default {
       filterFormula: "",
       listBranch: [],
       currentBranch: null,
+      currentUser: null,
     };
   },
   props: {
     isShowPopup: Boolean,
   },
   created() {
+    let user = JSON.parse(localStorage.getItem("user"));
+    this.currentUser = user.userInfo;
     this.getDefaultData();
   },
 
@@ -231,17 +234,17 @@ export default {
     },
     getDefaultData() {
       const me = this;
-      ProductService.getProductDetailByBranch(
-        this.$store.state.auth.user.userInfo.branchid
-      ).then((result) => {
-        if (result && result.data) {
-          me.productList = result.data.data;
-          //   me.totalPage = result.data.total;
-          //   let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
-          //   me.pageShow =
-          //     currentPageShow < me.maxPageShow ? currentPageShow : me.maxPageShow;
+      ProductService.getProductDetailByBranch(me.currentUser.branchid).then(
+        (result) => {
+          if (result && result.data) {
+            me.productList = result.data.data;
+            //   me.totalPage = result.data.total;
+            //   let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
+            //   me.pageShow =
+            //     currentPageShow < me.maxPageShow ? currentPageShow : me.maxPageShow;
+          }
         }
-      });
+      );
     },
     /**
      * mở form view

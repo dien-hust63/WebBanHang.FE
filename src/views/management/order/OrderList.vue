@@ -202,13 +202,8 @@ export default {
           Operator: Operator.Equal,
           FilterValue: this.currentBranch?.id.toString() ?? "0",
         },
-        {
-          FieldName: "receiveemployeeid",
-          Operator: Operator.Equal,
-          FilterValue: this.currentUser?.iduser.toString() ?? "0",
-        },
       ];
-      this.filterFormula = "({0} OR {1}) AND ({2} OR {3})";
+      this.filterFormula = "({0} OR {1}) AND {2}";
       this.getDefaultData();
     },
     dblclickRow(e, rowData) {
@@ -254,13 +249,13 @@ export default {
           FilterValue: branch?.id.toString() ?? "0",
         },
 
-        {
-          FieldName: "receiveemployeeid",
-          Operator: Operator.Equal,
-          FilterValue: this.currentUser?.iduser.toString() ?? "0",
-        },
+        // {
+        //   FieldName: "receiveemployeeid",
+        //   Operator: Operator.Equal,
+        //   FilterValue: this.currentUser?.iduser.toString() ?? "0",
+        // },
       ];
-      this.filterFormula = "({0} OR {1}) AND ({2} OR {3})";
+      this.filterFormula = "({0} OR {1}) AND {2}";
       this.getDefaultData();
     },
     /**

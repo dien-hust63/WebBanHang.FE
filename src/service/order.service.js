@@ -24,5 +24,19 @@ class OrderService extends BaseService{
     return axios
       .get(`${this.apiURL}/${this.controller}/getOrderCodeAuto`);
   }
+
+  getReportRevenueByYear(param){
+    return axios
+    .post(`${this.apiURL}/${this.controller}/getReportRevenueByYear`,param);
+  }
+
+  getReportRevenueByBranch(param){
+    return axios
+    .post(`${this.apiURL}/${this.controller}/getReportRevenueByBranch`,param);
+  }
+  getReportProductBestSell(param){
+    return axios
+    .post(`${this.apiURL}/${this.controller}/getReportProductBestSell`,param);
+  }
 }
 export default new OrderService();

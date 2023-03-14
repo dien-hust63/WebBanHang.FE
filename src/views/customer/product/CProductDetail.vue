@@ -73,8 +73,8 @@
         <div class="c-product-area-content">
           <v-row justify="center">
             <v-col
-              v-for="n in 12"
-              :key="n"
+              v-for="(product,index) in listRelateProduct"
+              :key="index"
               cols="12"
               sm="6"
               xs="6"
@@ -83,7 +83,7 @@
             >
               <div
                 class="c-product-area-item"
-                @click="viewDetailProduct"
+                @click="viewDetailProduct(product)"
               >
                 <CProductCard :product="product" />
               </div>
@@ -101,6 +101,7 @@ import ButtonQuantity from "../../common/ButtonQuantity.vue";
 import CProductCard from "../productcard/ProductCard.vue";
 import { FactoryService } from "../../../service/factory/factory.service";
 const ProductService = FactoryService.get("productService");
+import Operator from "../../../enum/OperatorEnum";
 export default {
   name: "CProductDetail",
   components: {
@@ -131,6 +132,7 @@ export default {
       currentSizePick: "",
       listProductDetail: [],
       chosenproduct: {},
+      listRelateProduct: [],
     };
   },
   created() {
@@ -163,12 +165,47 @@ export default {
             me.currentSizePick = me.productSizeList[0];
             me.chosenproduct["size"] = me.currentSizePick;
           }
+
+          let onlineBranch = localStorage.getItem("branchonline");
+          if (onlineBranch) {
+            onlineBranch = JSON.parse(onlineBranch);
+            let listFilter = [
+              {
+                FieldName: "branchid",
+                Operator: Operator.Equal,
+                FilterValue: onlineBranch?.idbranch.toString() ?? "0",
+              },
+              {
+                FieldName: "categoryid",
+                Operator: Operator.Equal,
+                FilterValue: me.chosenproduct.categoryid.toString() ?? "0",
+              },
+            ];
+            ProductService.getPagingData({
+              PageIndex: 1,
+              PageSize: 12,
+              TableName: "Product",
+              ListFilter: listFilter,
+              FilterFormula: "{0} ANd {1}",
+            }).then((result) => {
+              if (result && result.data) {
+                me.listRelateProduct = result.data.listPaging;
+                let indexP = me.listRelateProduct.findIndex(
+                  (x) => x.idproduct == me.chosenproduct.idproduct
+                );
+                if (indexP > -1) {
+                  me.listRelateProduct.splice(indexP, 1);
+                }
+              }
+            });
+          }
         }
       });
     },
-    viewDetailProduct() {
+    viewDetailProduct(product) {
       this.$router.push({
         name: "c-product-detail",
+        params: { id: product["idproduct"] },
       });
     },
     pickColor(item) {

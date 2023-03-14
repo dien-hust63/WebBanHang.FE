@@ -61,7 +61,7 @@ export default {
       ],
       addressList: [
         {
-          name: "VPGD: Đội 6, Xã Phương Đình, Huyện Đan Phượng, Thành phố Hà nội, Việt nam",
+          name: "459 Bạch Mai, Hai Bà Trưng, Hà Nội, Việt nam",
         },
         { name: "Facebook thời trang nam: 360ForMen" },
         { name: "Hotline: 0337877093" },

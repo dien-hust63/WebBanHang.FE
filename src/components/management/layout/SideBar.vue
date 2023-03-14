@@ -153,6 +153,15 @@ export default {
       if (result && result.data) {
         me.listPermission = [...result.data.data];
         let listPermissionClone = [...me.listPermission];
+        // let itemRemove = ["Promotion", "Customer"];
+        // itemRemove.forEach((item) => {
+        //   const index = listPermissionClone.findIndex(
+        //     (x) => x.modulecode == item
+        //   );
+        //   if (index > -1) {
+        //     listPermissionClone.splice(index, 1);
+        //   }
+        // });
 
         listPermissionClone.forEach((element) => {
           if (

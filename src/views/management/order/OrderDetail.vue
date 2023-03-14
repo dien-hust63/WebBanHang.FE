@@ -18,7 +18,7 @@
 
       <v-spacer></v-spacer>
       <v-btn
-        v-show="selectedOrderStatus.id == 2"
+        v-show="selectedOrderStatus.id == 2 && isReceivePermission"
         color="success"
         @click="receiveOrder"
         class="ml-4"
@@ -28,17 +28,46 @@
         </v-icon>
         Tiếp nhận
       </v-btn>
-      <v-btn
-        v-show="selectedOrderStatus.id == 3"
-        color="success"
-        @click="createOrderDeliver"
-        class="ml-4"
+      <v-dialog
+        v-model="deliverConfigDialog"
+        persistent
+        max-width="490"
       >
-        <v-icon left>
-          mdi-pencil
-        </v-icon>
-        Tạo đơn giao hàng
-      </v-btn>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-show="selectedOrderStatus.id == 3"
+            color="success"
+            class="ml-4"
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon left>
+              mdi-pencil
+            </v-icon>
+            Tạo đơn giao hàng
+          </v-btn>
+        </template>
+        <v-card>
+          <v-card-title class="text-h6">
+            Hệ thống sẽ tạo đơn giao hàng sang Giao hàng nhanh đối với đơn hàng này. Bạn có chắc muốn tạo đơn giao hàng?
+          </v-card-title>
+          <!-- <v-card-text>Bạn có chắc muốn xóa những dữ liệu đã chọn?</v-card-text> -->
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn @click="deliverConfigDialog = false">
+              Hủy
+            </v-btn>
+            <v-btn
+              depressed
+              color="success"
+              @click="createOrderDeliver"
+            >
+              Đồng ý
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
       <v-btn
         v-show="isViewMode"
         color="#F4F5F9"
@@ -484,6 +513,7 @@ export default {
   components: { ProductPopup },
   data() {
     return {
+      defaultBranch: null,
       listPermissionInModule: "",
       selectedProvince: null,
       listProvince: [],
@@ -538,7 +568,44 @@ export default {
         id: 1,
         text: "Hoàn thành",
       },
-      listOrderStatus: [],
+      listOrderStatus: [
+        {
+          id: 1,
+          text: "Hoàn thành",
+        },
+        {
+          id: 2,
+          text: "Chờ tiếp nhận",
+        },
+        {
+          id: 3,
+          text: "Đã tiếp nhận",
+        },
+        {
+          id: 4,
+          text: "Chờ giao hàng",
+        },
+        {
+          id: 5,
+          text: "Đang giao hàng",
+        },
+        {
+          id: 6,
+          text: "Giao hàng thất bại",
+        },
+        {
+          id: 7,
+          text: "Đổi hàng",
+        },
+        {
+          id: 8,
+          text: "Trả hàng",
+        },
+        {
+          id: 9,
+          text: "Hủy",
+        },
+      ],
       listImageInColor: [],
       listProductDetail: [],
       listColorSelected: [],
@@ -592,6 +659,8 @@ export default {
       },
       isShowPopup: false,
       currentUser: null,
+      isReceivePermission: false,
+      deliverConfigDialog: false,
     };
   },
   created() {
@@ -608,7 +677,7 @@ export default {
       });
     }
     this.currentData.orderdate = moment().format("yyyy-MM-DD");
-    //this.getAllBranch();
+    this.getAllBranch();
     // this.getAllProductCategory();
     this.getDetailInfo();
     this.getAllProvince();
@@ -620,6 +689,9 @@ export default {
         me.listPermissionInModule = listPermissionClone.find(
           (x) => x.modulecode == "Order"
         ).permission;
+        me.isReceivePermission =
+          me.listPermissionInModule.includes("Receive") ||
+          me.listPermissionInModule.includes("All");
       }
     });
 
@@ -677,33 +749,34 @@ export default {
         });
     },
     changeWard(ward) {
-      if (ward && this.selectedProvince && this.selectedDistrict) {
-        const me = this;
-        let param = {
-          from_district_id: this.defaultBranch.districtid,
-          service_type_id: 2,
-          to_district_id: this.selectedDistrict["id"],
-          to_ward_code: this.selectedWard["id"],
-          height: 5,
-          length: 30,
-          weight: 20,
-          width: 20,
-          insurance_value: this.totalPrice,
-          coupon: null,
-        };
-        // gọi lấy thông tin vận chuyển
-        DeliverService.getDeliverPrice(param)
-          .then((result) => {
-            if (result) {
-              me.deliverPrice = result.data.data.service_fee;
-            }
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      } else {
-        this.deliverPrice = null;
-      }
+      console.log(ward);
+      // if (ward && this.selectedProvince && this.selectedDistrict) {
+      //   const me = this;
+      //   let param = {
+      //     from_district_id: this.defaultBranch.districtid,
+      //     service_type_id: 2,
+      //     to_district_id: this.selectedDistrict["id"],
+      //     to_ward_code: this.selectedWard["id"],
+      //     height: 5,
+      //     length: 30,
+      //     weight: 20,
+      //     width: 20,
+      //     insurance_value: this.totalPrice,
+      //     coupon: null,
+      //   };
+      //   // gọi lấy thông tin vận chuyển
+      //   DeliverService.getDeliverPrice(param)
+      //     .then((result) => {
+      //       if (result) {
+      //         me.deliverPrice = result.data.data.service_fee;
+      //       }
+      //     })
+      //     .catch((e) => {
+      //       console.log(e);
+      //     });
+      // } else {
+      //   this.deliverPrice = null;
+      // }
     },
     changeProvince(province) {
       const me = this;
@@ -766,7 +839,83 @@ export default {
     /**
      * Tạo đơn giao hàng
      */
-    createOrderDeliver() {},
+    createOrderDeliver() {
+      const me = this;
+      let orderParam = {
+        payment_type_id: 2,
+        note: `Đơn hàng mã ${me.currentData?.ordercode}`,
+        from_name: "360 for men",
+        from_phone: "0337877093",
+        from_address: me.defaultBranch.address,
+        from_ward_name: me.defaultBranch.wardname,
+        from_district_name: me.defaultBranch.districtname,
+        from_province_name: me.defaultBranch.provincename,
+        required_note: "KHONGCHOXEMHANG",
+        return_name: "360 for men",
+        return_phone: "0337877093",
+        return_address: me.defaultBranch.address,
+        return_ward_name: me.defaultBranch.wardname,
+        return_district_name: me.defaultBranch.districtname,
+        return_province_name: me.defaultBranch.provincename,
+        client_order_code: "",
+        to_name: me.currentData?.customername,
+        to_phone: me.currentData?.customerphone,
+        to_address: me.currentData?.customeraddress,
+        to_ward_name: me.currentData?.wardname,
+        to_district_name: me.currentData?.districtname,
+        to_province_name: me.currentData?.provincename,
+        cod_amount: 0,
+        content: "Theo New York Times",
+        weight: 200,
+        length: 1,
+        width: 19,
+        height: 10,
+        pick_station_id: 1444,
+        deliver_station_id: null,
+        insurance_value: 0,
+        service_id: 0,
+        service_type_id: 2,
+        coupon: null,
+        pick_shift: null,
+        pickup_time: 1665272576,
+      };
+      orderParam["items"] = me.listProductDetail.map((x) => ({
+        name: x.productname,
+        code: x.productcode,
+        quantity: x.quantity,
+        price: x.sellprice,
+        length: 12,
+        width: 12,
+        height: 12,
+      }));
+      if (me.currentData.checkoutstatusid == 2) {
+        orderParam.cod_amount = me.totalPrice;
+      }
+
+      DeliverService.createShippingOrder(orderParam).then((result) => {
+        if (result) {
+          me.$toast.success("Tạo đơn giao hàng thành công");
+          me.deliverConfigDialog = false;
+          me.currentData["statusid"] = OrderStatus.WaitingDeliver;
+          let orderParam = {
+            order: JSON.stringify(me.currentData),
+            orderdetail: JSON.stringify(me.listProductDetail),
+          };
+          OrderService.updateOrderDetail(orderParam).then((result) => {
+            if (result && result.data) {
+              if (result.data.success) {
+                me.getDetailInfo();
+              } else {
+                me.$toast.error(result.data.errorMessage);
+              }
+            }
+          });
+        } else {
+          me.$toast.error("Tạo đơn giao hàng lỗi");
+          me.deliverConfigDialog = false;
+        }
+      });
+    },
     /**
      * tiếp nhận đơn hàng
      */
@@ -778,6 +927,17 @@ export default {
         this.$toast.error("Bạn không có quyền thực hiện tính năng này.");
         return;
       }
+      this.currentData["statusid"] = OrderStatus.Received;
+      this.currentData["statusname"] = "Đã tiếp nhận";
+      this.currentData["receiveemployeename"] = this.currentUser.username;
+      this.currentData["receiveemployeeid"] = parseInt(this.currentUser.iduser);
+      this.currentData["branchid"] = this.$route.params.branchid
+        ? this.$route.params.branchid
+        : this.currentUser.branchid;
+      this.currentData["branchname"] = this.$route.params.branchname
+        ? this.$route.params.branchname
+        : this.currentUser.branchname;
+      this.updateData(true);
     },
     /**
      * Lấy danh sách toàn bộ chi nháh
@@ -786,11 +946,20 @@ export default {
       const me = this;
       BranchService.getAllData()
         .then((result) => {
-          if (result && result.data) {
-            me.listBranch = result.data.data.map((x) => ({
-              value: x.idbranch,
-              text: x.branchname,
-            }));
+          if (
+            result &&
+            result.data &&
+            result.data.data &&
+            result.data.data.length > 0
+          ) {
+            let index = result.data.data.findIndex(
+              (x) => x.isaddressdefault == true
+            );
+            if (index > -1) {
+              me.defaultBranch = result.data.data[index];
+            } else {
+              me.defaultBranch = result.data.data[0];
+            }
           }
         })
         .catch((e) => {
@@ -1001,7 +1170,7 @@ export default {
     /**
      * sửa hàng hóa
      */
-    updateData() {
+    updateData(isUpdateCustom = false) {
       let orderParam = {
         order: JSON.stringify(this.currentData),
         orderdetail: JSON.stringify(this.listProductDetail),
@@ -1010,12 +1179,17 @@ export default {
       OrderService.updateOrderDetail(orderParam).then((result) => {
         if (result && result.data) {
           if (result.data.success) {
-            me.$toast.success("Cập nhật đơn hàng thành công!");
-            me.formMode = FormMode.View;
-            this.$router.push({
-              name: "m-order-detail",
-              params: { id: result.data.data["idsaleorder"], formMode: 3 },
-            });
+            if (isUpdateCustom) {
+              me.$toast.success("Tiếp nhận đơn hàng thành công!");
+              me.getDetailInfo();
+            } else {
+              me.$toast.success("Cập nhật đơn hàng thành công!");
+              me.formMode = FormMode.View;
+              this.$router.push({
+                name: "m-order-detail",
+                params: { id: result.data.data["idsaleorder"], formMode: 3 },
+              });
+            }
           } else {
             me.$toast.error(result.data.errorMessage);
           }
@@ -1052,6 +1226,15 @@ export default {
         if (val) {
           this.currentData["checkoutstatusid"] = val["id"];
           this.currentData["checkoutstatusname"] = val["text"];
+        }
+      },
+      deep: true,
+    },
+    selectedOrderStatus: {
+      handler: function (val) {
+        if (val) {
+          this.currentData["statusid"] = val["id"];
+          this.currentData["statusname"] = val["text"];
         }
       },
       deep: true,
@@ -1104,6 +1287,14 @@ export default {
           total += parseInt(x["sellprice"]) * parseInt(x["quantity"]);
         }
       });
+      if (
+        this.currentData &&
+        this.currentData["deliverprice"] &&
+        this.currentData["deliverprice"] != "" &&
+        this.selectedOrderType.id == 2
+      ) {
+        total += parseInt(this.currentData["deliverprice"]);
+      }
       return total;
     },
     totalInventory() {

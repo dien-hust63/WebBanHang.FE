@@ -563,9 +563,12 @@ export default {
   },
   computed: {
     totalChart2() {
-      return this.series2.reduce(function (total, num) {
-        return total + num;
-      }, 0);
+      if (this.series2 && this.series2.length > 0) {
+        return this.series2.reduce(function (total, num) {
+          return total + num;
+        }, 0);
+      }
+      return 0;
     },
   },
 };

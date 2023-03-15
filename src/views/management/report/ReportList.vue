@@ -261,18 +261,7 @@ export default {
           enabled: false,
         },
         xaxis: {
-          categories: [
-            "South Korea",
-            "Canada",
-            "United Kingdom",
-            "Netherlands",
-            "Italy",
-            "France",
-            "Japan",
-            "United States",
-            "China",
-            "Germany",
-          ],
+          categories: [],
           title: {
             text: "Số lượng (chiếc)",
           },

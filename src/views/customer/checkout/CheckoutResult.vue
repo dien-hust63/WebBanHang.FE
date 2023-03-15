@@ -4,7 +4,7 @@
       class="bkc-checkout-result-success"
       v-if="checkoutStatus == '00'"
     >
-      <h5>Bạn đã thanh toán đơn hàng thành công!</h5>
+      <h5>Bạn đã đặt hàng thành công!</h5>
       <div class="img-checkout-success mt-4">
       </div>
 
@@ -56,12 +56,13 @@ export default {
   props: {},
   data() {
     return {
-      checkoutStatus: "",
+      checkoutStatus: "00",
     };
   },
   created() {
-    console.log(this.$route.query);
-    this.checkoutStatus = this.$route.query.vnp_ResponseCode;
+    if (this.$route.query && this.$route.query.vnp_ResponseCode) {
+      this.checkoutStatus = this.$route.query.vnp_ResponseCode;
+    }
   },
   methods: {
     backToHomePage() {

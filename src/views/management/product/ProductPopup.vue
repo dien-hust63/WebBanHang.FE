@@ -32,6 +32,7 @@
             fixed-header
             @dblclick:row="dblclickRow"
             no-data-text="Không có dữ liệu"
+            :items-per-page="100"
           >
           </v-data-table>
         </div>
@@ -106,7 +107,7 @@ export default {
       addEmployee: {},
       maxPageShow: 7,
       pageShow: 1,
-      pageSize: 10,
+      pageSize: 100,
       pageIndex: 1,
       totalPage: 0,
       title: "Danh sách các hàng hóa",

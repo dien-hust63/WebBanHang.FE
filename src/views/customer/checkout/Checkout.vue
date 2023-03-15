@@ -350,6 +350,11 @@ export default {
                 .catch((e) => {
                   console.log(e);
                 });
+            } else {
+              me.$toast.success("Đặt mua hàng thành công!");
+              this.$router.push({
+                name: "c-checkout-result",
+              });
             }
           } else {
             me.$toast.error(result.data.errorMessage);

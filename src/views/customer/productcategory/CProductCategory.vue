@@ -108,7 +108,6 @@ export default {
       };
       ProductService.getListProductByCategory(param).then((result) => {
         if (result && result.data) {
-          debugger; // eslint-disable-line no-debugger
           me.listProduct = result.data.data.listPaging;
           me.totalPage = result.data.data.total;
           let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);

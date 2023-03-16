@@ -68,7 +68,7 @@
                   item-text="text"
                   item-value="id"
                   return-object
-                  width="300px"
+                  width="400px"
                 ></v-select></div>
             </div>
             <div

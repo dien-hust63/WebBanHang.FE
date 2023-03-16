@@ -716,33 +716,35 @@ export default {
           const me = this;
           me.isShowGroupInstance = true;
           let countP = 0;
-          me.listProductDetail = [];
-          val.forEach((element) => {
-            if (element["color"] != "") {
-              if (me.listSizeSelected && me.listSizeSelected.length > 0) {
-                me.listSizeSelected.forEach((size) => {
+          if (this.formMode == FormMode.Add) {
+            me.listProductDetail = [];
+            val.forEach((element) => {
+              if (element["color"] != "") {
+                if (me.listSizeSelected && me.listSizeSelected.length > 0) {
+                  me.listSizeSelected.forEach((size) => {
+                    countP++;
+                    me.listProductDetail.push({
+                      productname: `${me.currentData["productname"]} - ${element["color"]} - ${size}`,
+                      productcode: `${me.currentData["productcode"]}-${countP}`,
+                      costprice: `${me.currentData["costprice"]}`,
+                      sellprice: `${me.currentData["sellprice"]}`,
+                      size: size,
+                      color: element["color"],
+                    });
+                  });
+                } else {
                   countP++;
                   me.listProductDetail.push({
-                    productname: `${me.currentData["productname"]} - ${element["color"]} - ${size}`,
+                    productname: `${me.currentData["productname"]} - ${element["color"]}`,
                     productcode: `${me.currentData["productcode"]}-${countP}`,
                     costprice: `${me.currentData["costprice"]}`,
                     sellprice: `${me.currentData["sellprice"]}`,
-                    size: size,
                     color: element["color"],
                   });
-                });
-              } else {
-                countP++;
-                me.listProductDetail.push({
-                  productname: `${me.currentData["productname"]} - ${element["color"]}`,
-                  productcode: `${me.currentData["productcode"]}-${countP}`,
-                  costprice: `${me.currentData["costprice"]}`,
-                  sellprice: `${me.currentData["sellprice"]}`,
-                  color: element["color"],
-                });
+                }
               }
-            }
-          });
+            });
+          }
         }
       },
       deep: true,
@@ -756,35 +758,37 @@ export default {
           const me = this;
           me.isShowGroupInstance = true;
           let countP = 0;
-          me.listProductDetail = [];
-          if (me.listColorSelected && me.listColorSelected.length > 0) {
-            me.listColorSelected.forEach((element) => {
-              if (element["color"] != "") {
-                if (me.listSizeSelected && me.listSizeSelected.length > 0) {
-                  me.listSizeSelected.forEach((size) => {
+          if (this.formMode == FormMode.Add) {
+            me.listProductDetail = [];
+            if (me.listColorSelected && me.listColorSelected.length > 0) {
+              me.listColorSelected.forEach((element) => {
+                if (element["color"] != "") {
+                  if (me.listSizeSelected && me.listSizeSelected.length > 0) {
+                    me.listSizeSelected.forEach((size) => {
+                      countP++;
+                      me.listProductDetail.push({
+                        productname: `${val["productname"]} - ${element["color"]} - ${size}`,
+                        productcode: `${val["productcode"]}-${countP}`,
+                        costprice: `${val["costprice"]}`,
+                        sellprice: `${val["sellprice"]}`,
+                        size: size,
+                        color: element["color"],
+                      });
+                    });
+                  } else {
+                    me.listProductDetail = [];
                     countP++;
                     me.listProductDetail.push({
-                      productname: `${val["productname"]} - ${element["color"]} - ${size}`,
+                      productname: `${val["productname"]} - ${element["color"]}`,
                       productcode: `${val["productcode"]}-${countP}`,
                       costprice: `${val["costprice"]}`,
                       sellprice: `${val["sellprice"]}`,
-                      size: size,
                       color: element["color"],
                     });
-                  });
-                } else {
-                  me.listProductDetail = [];
-                  countP++;
-                  me.listProductDetail.push({
-                    productname: `${val["productname"]} - ${element["color"]}`,
-                    productcode: `${val["productcode"]}-${countP}`,
-                    costprice: `${val["costprice"]}`,
-                    sellprice: `${val["sellprice"]}`,
-                    color: element["color"],
-                  });
+                  }
                 }
-              }
-            });
+              });
+            }
           }
         }
       },
@@ -800,34 +804,36 @@ export default {
           const me = this;
           me.isShowGroupInstance = true;
           let countP = 0;
-          me.listProductDetail = [];
-          me.listColorSelected.forEach((element) => {
-            if (element["color"] != "") {
-              if (val && val.length > 0) {
-                val.forEach((size) => {
+          if (this.formMode == FormMode.Add) {
+            me.listProductDetail = [];
+            me.listColorSelected.forEach((element) => {
+              if (element["color"] != "") {
+                if (val && val.length > 0) {
+                  val.forEach((size) => {
+                    countP++;
+                    me.listProductDetail.push({
+                      productname: `${me.currentData["productname"]} - ${element["color"]} - ${size}`,
+                      productcode: `${me.currentData["productcode"]}-${countP}`,
+                      costprice: `${me.currentData["costprice"]}`,
+                      sellprice: `${me.currentData["sellprice"]}`,
+                      size: size,
+                      color: element["color"],
+                    });
+                  });
+                } else {
+                  me.listProductDetail = [];
                   countP++;
                   me.listProductDetail.push({
-                    productname: `${me.currentData["productname"]} - ${element["color"]} - ${size}`,
+                    productname: `${me.currentData["productname"]} - ${element["color"]}`,
                     productcode: `${me.currentData["productcode"]}-${countP}`,
                     costprice: `${me.currentData["costprice"]}`,
                     sellprice: `${me.currentData["sellprice"]}`,
-                    size: size,
                     color: element["color"],
                   });
-                });
-              } else {
-                me.listProductDetail = [];
-                countP++;
-                me.listProductDetail.push({
-                  productname: `${me.currentData["productname"]} - ${element["color"]}`,
-                  productcode: `${me.currentData["productcode"]}-${countP}`,
-                  costprice: `${me.currentData["costprice"]}`,
-                  sellprice: `${me.currentData["sellprice"]}`,
-                  color: element["color"],
-                });
+                }
               }
-            }
-          });
+            });
+          }
         }
       },
       deep: true,

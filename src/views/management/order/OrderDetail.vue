@@ -566,12 +566,12 @@ export default {
       },
       selectedOrderStatus: {
         id: 1,
-        text: "Hoàn thành",
+        text: "Thành công",
       },
       listOrderStatus: [
         {
           id: 1,
-          text: "Hoàn thành",
+          text: "Thành công",
         },
         {
           id: 2,
@@ -749,7 +749,8 @@ export default {
         });
     },
     changeWard(ward) {
-      console.log(ward);
+      this.currentData["wardid"] = ward.id;
+      this.currentData["wardname"] = ward.text;
       // if (ward && this.selectedProvince && this.selectedDistrict) {
       //   const me = this;
       //   let param = {
@@ -780,6 +781,8 @@ export default {
     },
     changeProvince(province) {
       const me = this;
+      me.currentData["provinceid"] = province.id;
+      me.currentData["provincename"] = province.text;
       me.selectedDistrict = null;
       me.selectedWard = null;
       me.deliverPrice = null;
@@ -799,6 +802,8 @@ export default {
     },
     changeDistrict(district) {
       const me = this;
+      me.currentData["districtid"] = district.id;
+      me.currentData["districtname"] = district.text;
       me.selectedWard = null;
       me.deliverPrice = null;
       LocationService.getWardByDistrict(district.id)
@@ -841,6 +846,7 @@ export default {
      */
     createOrderDeliver() {
       const me = this;
+
       let orderParam = {
         payment_type_id: 2,
         note: `Đơn hàng mã ${me.currentData?.ordercode}`,
@@ -870,6 +876,7 @@ export default {
         length: 1,
         width: 19,
         height: 10,
+        cod_failed_amount: 2000,
         pick_station_id: 1444,
         deliver_station_id: null,
         insurance_value: 0,
@@ -887,6 +894,9 @@ export default {
         length: 12,
         width: 12,
         height: 12,
+        category: {
+          level1: "Áo",
+        },
       }));
       if (me.currentData.checkoutstatusid == 2) {
         orderParam.cod_amount = me.totalPrice;

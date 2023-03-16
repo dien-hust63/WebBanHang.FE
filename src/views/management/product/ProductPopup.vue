@@ -162,6 +162,7 @@ export default {
       listBranch: [],
       currentBranch: null,
       currentUser: null,
+      searchtext: "",
     };
   },
   props: {
@@ -197,6 +198,18 @@ export default {
       this.getDefaultData();
     },
     addProductToOrder() {
+      let lstProductEmpty = [];
+      this.selected.forEach((element) => {
+        if (element.inventory == 0) {
+          lstProductEmpty.push(element.productcode);
+        }
+      });
+      if (lstProductEmpty.length > 0) {
+        let productName = lstProductEmpty.join(",");
+        let errorMessge = `${productName} đã hết hàng. Vui lòng chọn lại hàng hóa!`;
+        this.$toast.warning(errorMessge);
+        return;
+      }
       this.$emit("addProductToOrder", this.selected);
     },
     closeAddProductPopup() {
@@ -207,24 +220,7 @@ export default {
      * @param {} data
      */
     searchData(data) {
-      this.listFilter = [
-        {
-          FieldName: "productcode",
-          Operator: Operator.Like,
-          FilterValue: data,
-        },
-        {
-          FieldName: "productname",
-          Operator: Operator.Like,
-          FilterValue: data,
-        },
-        {
-          FieldName: "branchid",
-          Operator: Operator.Equal,
-          FilterValue: this.currentBranch?.id.toString() ?? "0",
-        },
-      ];
-      this.filterFormula = "{0} OR {1}";
+      this.searchtext = data;
       this.getDefaultData();
     },
     dblclickRow(e, rowData) {
@@ -235,17 +231,19 @@ export default {
     },
     getDefaultData() {
       const me = this;
-      ProductService.getProductDetailByBranch(me.currentUser.branchid).then(
-        (result) => {
-          if (result && result.data) {
-            me.productList = result.data.data;
-            //   me.totalPage = result.data.total;
-            //   let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
-            //   me.pageShow =
-            //     currentPageShow < me.maxPageShow ? currentPageShow : me.maxPageShow;
-          }
+      let param = {
+        branchid: me.currentBranch.id,
+        searchtext: me.searchtext,
+      };
+      ProductService.getProductDetailByBranch(param).then((result) => {
+        if (result && result.data) {
+          me.productList = result.data.data;
+          //   me.totalPage = result.data.total;
+          //   let currentPageShow = Math.ceil((me.totalPage * 1.0) / me.pageSize);
+          //   me.pageShow =
+          //     currentPageShow < me.maxPageShow ? currentPageShow : me.maxPageShow;
         }
-      );
+      });
     },
     /**
      * mở form view

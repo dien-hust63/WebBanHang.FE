@@ -37,9 +37,9 @@ class ProductService extends BaseService{
       .get(`${this.apiURL}/${this.controller}/getProductDetail/${id}`);
   }
 
-  getProductDetailByBranch(branchid){
+  getProductDetailByBranch(param){
     return axios
-      .get(`${this.apiURL}/${this.controller}/getProductDetailByBranch/${branchid}`);
+      .post(`${this.apiURL}/${this.controller}/getProductDetailByBranch`,param);
   }
 
   getListProductByCategory(param){

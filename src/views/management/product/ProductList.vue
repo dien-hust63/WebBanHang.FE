@@ -289,7 +289,7 @@ export default {
             me.$toast.success("Xóa hàng hóa thành công!");
             this.getDefaultData();
           } else {
-            me.$toast.error(result.data.errorMessage);
+            me.$toast.error("Hàng hóa đã phát sinh dữ liệu trên đơn hàng!");
           }
         }
       });
